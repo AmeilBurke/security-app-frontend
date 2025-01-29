@@ -1,33 +1,30 @@
 import { useEffect, useRef } from "react"
 import { getFullAccountDetails } from "@/api-requests/account/getFullAccountDetails"
 import { getJwtDetails } from "@/api-requests/account/getJwtDetails"
-import { setAccountDetails } from "@/features/accountDetails/accountDetailsSlice"
-import { useAppDispatch } from "@/app/hooks"
+import { setUserAccountDetails } from "@/features/userAccountDetails/userAccountDetailsSlice"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { toaster, Toaster } from "@/components/ui/toaster"
 import { getSocket } from "@/socket"
 import { getJwtFromLocalStorage } from "@/utils/getJwtFromLocalStorage"
 import { AlertDetails } from "@/utils/types/indexTypes"
 import { setAlertDetails } from "@/features/alertDetails/alertDetailsSlice"
-import { getAllAccounts } from "@/api-requests/account/getAllAccounts"
-import { getAllBannedPeople } from "@/api-requests/banned-people/getAllBannedPeople"
-import { getBannedPersonById } from "@/api-requests/banned-people/getBannedPersonById"
-import { getAllBannedPeopleByVenueId } from "@/api-requests/venues/getAllBannedPeopleByVenueId"
-import { getAllManagersForOneVenue } from "@/api-requests/venues/getAllManagersForOneVenue"
+import { getAlertDetails } from "@/api-requests/alert-details/getAlertDetails"
 
 const PageApp = () => {
     const dispatch = useAppDispatch()
+    const allAlerts = useAppSelector(state => state.alertDetailsSlice.alerts)
     const jwtToken = getJwtFromLocalStorage()
     const socket = getSocket()
-    // const allAlertDetails = useAppSelector(state => state.alertDetailsSlice.alerts)
     const timestampOfLastAlert = useRef<Date | undefined>(undefined)
     const hasTriedAutoLogIn = useRef<boolean>(false)
-    const wasAutoLoginSuccessful = useRef<boolean>(false)
+    const hasFetchedAllVenues = useRef<boolean>(false)
+    // const wasAutoLoginSuccessful = useRef<boolean>(false)
     const hasSocketId = useRef<boolean>(false)
 
     const renewJwtToken = async (jwtToken: string) => {
         const jwtProfileResult = await getJwtDetails(jwtToken)
         if (jwtProfileResult === "error" || jwtProfileResult === 401) {
-            wasAutoLoginSuccessful.current = false
+            // wasAutoLoginSuccessful.current = false
             localStorage.removeItem('jwt')
             return null
         }
@@ -35,8 +32,8 @@ const PageApp = () => {
             jwtToken,
             jwtProfileResult.sub,
         )
-        dispatch(setAccountDetails(fullProfileResult))
-        wasAutoLoginSuccessful.current = true
+        dispatch(setUserAccountDetails(fullProfileResult))
+        // wasAutoLoginSuccessful.current = true
     }
 
     const onConnect = () => {
@@ -48,12 +45,11 @@ const PageApp = () => {
         }
     }
 
-    // need to double check this
     const onAlertCreate = (data: {
         latestAlert: AlertDetails
         latestAlertTime: string
     }) => {
-        // console.log(data)
+        console.log(data)
         const [day, month, year] = data.latestAlertTime
             .split("T")[0]
             .split("/")
@@ -74,7 +70,7 @@ const PageApp = () => {
         )
 
         if (timestampOfLastAlert.current !== undefined) {
-            console.log(timestampOfLastAlert.current <= newAlertTimestamp)
+            console.log(`timestampOfLastAlert.current: ${timestampOfLastAlert.current <= newAlertTimestamp}`)
         }
 
         if (
@@ -91,6 +87,12 @@ const PageApp = () => {
         }
     }
 
+    const getAllAlertDetailsHandler = async () => {
+        const apiResult = await getAlertDetails(String(jwtToken))
+        console.log(apiResult)
+        dispatch(setAlertDetails({ alerts: apiResult }))
+    }
+
     useEffect(() => {
         if (jwtToken !== null && jwtToken !== "" && !hasTriedAutoLogIn.current) {
             renewJwtToken(jwtToken)
@@ -99,13 +101,18 @@ const PageApp = () => {
     }, [])
 
     useEffect(() => {
-        console.log(hasSocketId.current)
 
         if (jwtToken !== null && jwtToken !== "" && !hasSocketId.current && !socket.connected) {
             socket.on("connect", onConnect)
             socket.on("onAlertCreate", onAlertCreate)
             // need to add update
             socket.connect()
+
+            // need to do this for all slices that need to be created
+            if (hasFetchedAllVenues.current === false) {
+                getAllAlertDetailsHandler()
+                hasFetchedAllVenues.current = true
+            }
         }
 
         return () => {

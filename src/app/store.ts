@@ -1,4 +1,4 @@
-import accountDetailsSlice from "@/features/accountDetails/accountDetailsSlice"
+import userAccountDetailsSlice from "@/features/userAccountDetails/userAccountDetailsSlice"
 import alertDetailsSlice from "@/features/alertDetails/alertDetailsSlice"
 import venuesSlice from "@/features/venues/venuesSlice"
 import type { Action, ThunkAction } from "@reduxjs/toolkit"
@@ -8,7 +8,7 @@ import { setupListeners } from "@reduxjs/toolkit/query"
 // `combineSlices` automatically combines the reducers using
 // their `reducerPath`s, therefore we no longer need to call `combineReducers`.
 const rootReducer = combineSlices({
-  accountDetailsSlice,
+  userAccountDetailsSlice,
   alertDetailsSlice,
   venuesSlice,
 })

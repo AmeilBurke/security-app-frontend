@@ -7,7 +7,7 @@ import { useAppSelector } from "@/app/hooks"
 const PageDashboard = () => {
   const jwtToken = getJwtFromLocalStorage()
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  const accountId = useAppSelector(state => state.accountDetailsSlice.account_id)
+  const accountId = useAppSelector(state => state.userAccountDetailsSlice.account_id)
 
   useEffect(() => {
     if (jwtToken !== null || jwtToken !== "" && isLoading) {

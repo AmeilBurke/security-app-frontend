@@ -3,7 +3,7 @@ import { getJwtDetails } from "@/api-requests/account/getJwtDetails"
 import { getAndStoreJwt } from "@/api-requests/authentication/getJwt"
 import { useAppDispatch } from "@/app/hooks"
 import { Toaster, toaster } from "@/components/ui/toaster"
-import { setAccountDetails } from "@/features/accountDetails/accountDetailsSlice"
+import { setUserAccountDetails } from "@/features/userAccountDetails/userAccountDetailsSlice"
 import { getSocket } from "@/socket"
 import { Box, Button, Heading, Input, VStack } from "@chakra-ui/react"
 import { useState } from "react"
@@ -41,7 +41,7 @@ const PageLogin = () => {
             const fullProfileResult = await getFullAccountDetails(jwtResult, jwtProfileResult.sub)
             localStorage.setItem("jwt", jwtResult)
             dispatch(
-                setAccountDetails(fullProfileResult)
+                setUserAccountDetails(fullProfileResult)
             )
             getSocket().connect()
         }

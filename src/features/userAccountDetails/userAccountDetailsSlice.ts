@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
-interface accountDetailState {
+interface userAccountDetailState {
   account_id: number
   account_email: string
   account_password: string
@@ -8,7 +8,7 @@ interface accountDetailState {
   account_roleId: number
 }
 
-const initialState: accountDetailState = {
+const initialState: userAccountDetailState = {
   account_id: -1,
   account_email: "",
   account_password: "",
@@ -16,14 +16,14 @@ const initialState: accountDetailState = {
   account_roleId: -1,
 }
 
-export const accountDetailsSlice = createSlice({
+export const userAccountDetailsSlice = createSlice({
   name: "account-details",
   initialState,
   reducers: {
-    getAccountDetails: state => {
+    getUserAccountDetails: state => {
       return state
     },
-    setAccountDetails: (state, action: PayloadAction<accountDetailState>) => {
+    setUserAccountDetails: (state, action: PayloadAction<userAccountDetailState>) => {
       state.account_id = action.payload.account_id
       state.account_email = action.payload.account_email
       state.account_password = action.payload.account_password
@@ -33,6 +33,5 @@ export const accountDetailsSlice = createSlice({
   },
 })
 
-export const { getAccountDetails, setAccountDetails } =
-  accountDetailsSlice.actions
-export default accountDetailsSlice.reducer
+export const { getUserAccountDetails, setUserAccountDetails } = userAccountDetailsSlice.actions
+export default userAccountDetailsSlice.reducer
