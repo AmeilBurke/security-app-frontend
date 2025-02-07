@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { toaster, Toaster } from "@/components/ui/toaster"
 import { getSocket } from "@/socket"
-import { Account, AlertDetails, Venue } from "@/utils/types/indexTypes"
+import { Account, AlertDetails, BannedPerson, Venue } from "@/utils/types/indexTypes"
 import { setAlertDetails } from "@/features/alertDetails/alertDetailsSlice"
 import { fetchIndividualAccountDetails } from "@/api requests/get/accounts/fetchIndividualAccountDetails"
 import { fetchProfileInformationFromJwt } from "@/api requests/get/accounts/fetchProfileInformationFromJwt"
@@ -13,6 +13,8 @@ import { fetchAllAccountsDetails } from "@/api requests/get/accounts/fetchAllAcc
 import { setOtherAccountDetails } from "@/features/otherAccountDetails/otherAccountDetailsSlice"
 import { fetchAllVenues } from "@/api requests/get/venues/fetchAllVenues"
 import { setVenues } from "@/features/venues/venuesSlice"
+import { setBannedPeople } from "@/features/bannedPeople/bannedPeopleSlice"
+import { fetchAllBannedPeople } from "@/api requests/get/banned-people/fetchAllBannedPeople"
 
 const PageApp = () => {
     const dispatch = useAppDispatch()
@@ -23,6 +25,7 @@ const PageApp = () => {
     const userAccountDetails = useAppSelector(state => state.userAccountDetailsSlice)
     const allOtherAccountsDetails = useAppSelector(state => state.otherAccountDetailsSlice.other_accounts)
     const allVenues = useAppSelector(state => state.venuesSlice.venues)
+    const allBannedPeople = useAppSelector(state => state.bannedPeopleSlice)
 
     const autoLoginHandler = async () => {
         const fetchProfileInformationFromJwtResult =
@@ -145,12 +148,27 @@ const PageApp = () => {
             }
         }
 
+        const fetchAllBannedPeopleHandler = async () => {
+            const fetchAllBannedPeopleResult = await fetchAllBannedPeople()
+            console.log(fetchAllBannedPeopleResult)
+            
+            if (axios.isAxiosError(fetchAllBannedPeopleResult)) {
+                utilAxiosErrorToast(fetchAllBannedPeopleResult)
+            } else {
+                dispatch(setBannedPeople({ active_bans: fetchAllBannedPeopleResult.data.active_bans as BannedPerson[], non_active_bans: fetchAllBannedPeopleResult.data.non_active_bans as BannedPerson[] }))
+            }
+        }
+
         if (userAccountDetails.account_id !== -1 && allOtherAccountsDetails[0].account_id === -1) {
             fetchAllOtherAccountsDetailsHandler()
         }
 
         if (userAccountDetails.account_id !== -1 && allVenues[0].venue_id === -1) {
             fetchAllVenuesHandler()
+        }
+
+        if (userAccountDetails.account_id !== -1 && allBannedPeople.active_bans[0].bannedPerson_id === -1) {
+            fetchAllBannedPeopleHandler()
         }
 
     }, [userAccountDetails])

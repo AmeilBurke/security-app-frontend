@@ -9,7 +9,7 @@ const initialState: Account = {
 }
 
 export const userAccountDetailsSlice = createSlice({
-  name: "account-details",
+  name: "user-account-details",
   initialState,
   reducers: {
     getUserAccountDetails: state => {

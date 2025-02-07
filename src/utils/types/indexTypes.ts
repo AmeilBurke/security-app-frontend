@@ -26,13 +26,13 @@ export type Role = {
   role_name: string
 }
 
-export type bannedPerson = {
+export type BannedPerson = {
   bannedPerson_id: number
   bannedPerson_name: string
   bannedPerson_imageName: string
 }
 
-export type banDetail = {
+export type BanDetail = {
   banDetails_id: number
   banDetails_bannedPersonId: number
   banDetails_reason: string

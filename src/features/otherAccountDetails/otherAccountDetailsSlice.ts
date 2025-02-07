@@ -13,7 +13,7 @@ const initialState: { other_accounts: Account[] } = {
 }
 
 export const otherAccountDetailsSlice = createSlice({
-  name: "account-details",
+  name: "other-account-details",
   initialState,
   reducers: {
     getOtherAccountDetails: state => {

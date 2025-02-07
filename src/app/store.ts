@@ -1,16 +1,18 @@
-import userAccountDetailsSlice from "@/features/userAccountDetails/userAccountDetailsSlice"
-import alertDetailsSlice from "@/features/alertDetails/alertDetailsSlice"
-import venuesSlice from "@/features/venues/venuesSlice"
 import type { Action, ThunkAction } from "@reduxjs/toolkit"
 import { combineSlices, configureStore } from "@reduxjs/toolkit"
 import { setupListeners } from "@reduxjs/toolkit/query"
+import userAccountDetailsSlice from "@/features/userAccountDetails/userAccountDetailsSlice"
 import otherAccountDetailsSlice from "@/features/otherAccountDetails/otherAccountDetailsSlice"
+import bannedPeopleSlice from "@/features/bannedPeople/bannedPeopleSlice"
+import alertDetailsSlice from "@/features/alertDetails/alertDetailsSlice"
+import venuesSlice from "@/features/venues/venuesSlice"
 
 // `combineSlices` automatically combines the reducers using
 // their `reducerPath`s, therefore we no longer need to call `combineReducers`.
 const rootReducer = combineSlices({
   userAccountDetailsSlice,
   otherAccountDetailsSlice,
+  bannedPeopleSlice,
   alertDetailsSlice,
   venuesSlice,
 })
