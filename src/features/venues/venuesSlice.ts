@@ -1,10 +1,7 @@
+import { Venue } from "@/utils/types/indexTypes"
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
-interface venuesSlice {
-  venues: { venue_id: number; venue_name: string; venue_imagePath: string }[]
-}
-
-const initialState: venuesSlice = {
+const initialState: { venues: Venue[] } = {
   venues: [
     {
       venue_id: -1,
@@ -21,7 +18,7 @@ export const venuesSlice = createSlice({
     getVenues: state => {
       return state
     },
-    setVenues: (state, action: PayloadAction<venuesSlice>) => {
+    setVenues: (state, action: PayloadAction<{ venues: Venue[] }>) => {
       state.venues = action.payload.venues
     },
   },

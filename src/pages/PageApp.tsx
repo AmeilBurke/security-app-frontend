@@ -1,44 +1,55 @@
 import { useEffect, useRef } from "react"
-import { getFullAccountDetails } from "@/api-requests/account/getFullAccountDetails"
-import { getJwtDetails } from "@/api-requests/account/getJwtDetails"
-import { setUserAccountDetails } from "@/features/userAccountDetails/userAccountDetailsSlice"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { toaster, Toaster } from "@/components/ui/toaster"
 import { getSocket } from "@/socket"
-import { getJwtFromLocalStorage } from "@/utils/getJwtFromLocalStorage"
-import { AlertDetails } from "@/utils/types/indexTypes"
+import { Account, AlertDetails, Venue } from "@/utils/types/indexTypes"
 import { setAlertDetails } from "@/features/alertDetails/alertDetailsSlice"
-import { getAlertDetails } from "@/api-requests/alert-details/getAlertDetails"
+import { fetchIndividualAccountDetails } from "@/api requests/get/accounts/fetchIndividualAccountDetails"
+import { fetchProfileInformationFromJwt } from "@/api requests/get/accounts/fetchProfileInformationFromJwt"
+import { setUserAccountDetails } from "@/features/userAccountDetails/userAccountDetailsSlice"
+import { utilAxiosErrorToast } from "@/utils/utilAxiosErrorToast"
+import axios, { AxiosResponse } from "axios"
+import { fetchAllAccountsDetails } from "@/api requests/get/accounts/fetchAllAccountsDetails"
+import { setOtherAccountDetails } from "@/features/otherAccountDetails/otherAccountDetailsSlice"
+import { fetchAllVenues } from "@/api requests/get/venues/fetchAllVenues"
+import { setVenues } from "@/features/venues/venuesSlice"
 
 const PageApp = () => {
     const dispatch = useAppDispatch()
-    const allAlerts = useAppSelector(state => state.alertDetailsSlice.alerts)
-    const jwtToken = getJwtFromLocalStorage()
+    const jwtToken = localStorage.getItem("jwt")
     const socket = getSocket()
     const timestampOfLastAlert = useRef<Date | undefined>(undefined)
     const hasTriedAutoLogIn = useRef<boolean>(false)
-    const hasFetchedAllVenues = useRef<boolean>(false)
-    // const wasAutoLoginSuccessful = useRef<boolean>(false)
-    const hasSocketId = useRef<boolean>(false)
+    const userAccountDetails = useAppSelector(state => state.userAccountDetailsSlice)
+    const allOtherAccountsDetails = useAppSelector(state => state.otherAccountDetailsSlice.other_accounts)
+    const allVenues = useAppSelector(state => state.venuesSlice.venues)
 
-    const renewJwtToken = async (jwtToken: string) => {
-        const jwtProfileResult = await getJwtDetails(jwtToken)
-        if (jwtProfileResult === "error" || jwtProfileResult === 401) {
-            // wasAutoLoginSuccessful.current = false
-            localStorage.removeItem('jwt')
-            return null
+    const autoLoginHandler = async () => {
+        const fetchProfileInformationFromJwtResult =
+            await fetchProfileInformationFromJwt()
+
+        if (axios.isAxiosError(fetchProfileInformationFromJwtResult)) {
+            utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
         }
-        const fullProfileResult = await getFullAccountDetails(
-            jwtToken,
-            jwtProfileResult.sub,
+
+        const fetchIndividualAccountDetailsResult =
+            await fetchIndividualAccountDetails(
+                (fetchProfileInformationFromJwtResult as AxiosResponse).data.sub,
+            )
+
+        if (axios.isAxiosError(fetchIndividualAccountDetailsResult)) {
+            utilAxiosErrorToast(fetchIndividualAccountDetailsResult)
+        }
+
+        dispatch(
+            setUserAccountDetails(
+                (fetchIndividualAccountDetailsResult as AxiosResponse).data,
+            ),
         )
-        dispatch(setUserAccountDetails(fullProfileResult))
-        // wasAutoLoginSuccessful.current = true
     }
 
     const onConnect = () => {
         console.log(`WebSocket ID: ${socket.id}`)
-        hasSocketId.current = true
 
         if (socket.recovered) {
             console.log(`Websocket ID: ${socket.id} was recovered`)
@@ -49,7 +60,6 @@ const PageApp = () => {
         latestAlert: AlertDetails
         latestAlertTime: string
     }) => {
-        console.log(data)
         const [day, month, year] = data.latestAlertTime
             .split("T")[0]
             .split("/")
@@ -70,7 +80,9 @@ const PageApp = () => {
         )
 
         if (timestampOfLastAlert.current !== undefined) {
-            console.log(`timestampOfLastAlert.current: ${timestampOfLastAlert.current <= newAlertTimestamp}`)
+            console.log(
+                `timestampOfLastAlert.current: ${timestampOfLastAlert.current <= newAlertTimestamp}`,
+            )
         }
 
         if (
@@ -87,36 +99,23 @@ const PageApp = () => {
         }
     }
 
-    const getAllAlertDetailsHandler = async () => {
-        const apiResult = await getAlertDetails(String(jwtToken))
-        console.log(apiResult)
-        dispatch(setAlertDetails({ alerts: apiResult }))
-    }
-
     useEffect(() => {
         if (jwtToken !== null && jwtToken !== "" && !hasTriedAutoLogIn.current) {
-            renewJwtToken(jwtToken)
+            autoLoginHandler()
             hasTriedAutoLogIn.current = true
         }
     }, [])
 
     useEffect(() => {
-
-        if (jwtToken !== null && jwtToken !== "" && !hasSocketId.current && !socket.connected) {
+        if (jwtToken !== null && jwtToken !== "" && !socket.connected) {
             socket.on("connect", onConnect)
             socket.on("onAlertCreate", onAlertCreate)
             // need to add update
             socket.connect()
-
-            // need to do this for all slices that need to be created
-            if (hasFetchedAllVenues.current === false) {
-                getAllAlertDetailsHandler()
-                hasFetchedAllVenues.current = true
-            }
         }
 
         return () => {
-            if (socket.connected && hasSocketId.current === true) {
+            if (socket.connected) {
                 socket.off("connect", onConnect)
                 socket.off("onAlertCreate", onAlertCreate)
                 // need to socket.off() update
@@ -127,47 +126,34 @@ const PageApp = () => {
 
     // for testing api calls
     useEffect(() => {
-        // const getAllAccountsHandler = async () => {
-        //     if (jwtToken !== null && jwtToken !== '') {
-        //         const allAccounts = await getAllAccounts(jwtToken)
-        //         console.log(allAccounts)
-        //     }
-        // }
+        const fetchAllOtherAccountsDetailsHandler = async () => {
+            const fetchAllAccountsDetailsResult = await fetchAllAccountsDetails()
+            if (axios.isAxiosError(fetchAllAccountsDetailsResult)) {
+                utilAxiosErrorToast(fetchAllAccountsDetailsResult)
+            } else {
+                const resultsWithoutUserAccount = (fetchAllAccountsDetailsResult.data as Account[]).filter(account => account.account_id !== userAccountDetails.account_id)
+                dispatch(setOtherAccountDetails({ other_accounts: resultsWithoutUserAccount }))
+            }
+        }
 
-        // const getAllBannedPeopleHandler = async () => {
-        //     if (jwtToken !== null && jwtToken !== '') {
-        //         const allBannedPeople = await getAllBannedPeople(jwtToken)
-        //         console.log(allBannedPeople)
-        //     }
-        // }
+        const fetchAllVenuesHandler = async () => {
+            const fetchAllVenuesResult = await fetchAllVenues()
+            if (axios.isAxiosError(fetchAllVenuesResult)) {
+                utilAxiosErrorToast(fetchAllVenuesResult)
+            } else {
+                dispatch(setVenues({ venues: fetchAllVenuesResult.data as Venue[] }))
+            }
+        }
 
-        // const getBannedPersonByIdHandler = async () => {
-        //     if (jwtToken !== null && jwtToken !== '') {
-        //         const bannedPerson = await getBannedPersonById(jwtToken, 1)
-        //         console.log(bannedPerson)
-        //     }
-        // }
+        if (userAccountDetails.account_id !== -1 && allOtherAccountsDetails[0].account_id === -1) {
+            fetchAllOtherAccountsDetailsHandler()
+        }
 
-        // const getAllBannedPeopleByVenueIdHandler = async () => {
-        //     if (jwtToken !== null && jwtToken !== '') {
-        //         const bannedPeople = await getAllBannedPeopleByVenueId(jwtToken, 1)
-        //         console.log(bannedPeople)
-        //     }
-        // }
+        if (userAccountDetails.account_id !== -1 && allVenues[0].venue_id === -1) {
+            fetchAllVenuesHandler()
+        }
 
-        // const getAllManagersForOneVenueHandler = async () => {
-        //     if (jwtToken !== null && jwtToken !== '') {
-        //         const bannedPeople = await getAllManagersForOneVenue(jwtToken, 1)
-        //         console.log(bannedPeople)
-        //     }
-        // }
-
-        // getAllAccountsHandler()
-        // getAllBannedPeopleHandler()
-        // getBannedPersonByIdHandler()
-        // getAllBannedPeopleByVenueIdHandler()
-        // getAllManagersForOneVenueHandler()
-    }, [])
+    }, [userAccountDetails])
 
     return (
         <>

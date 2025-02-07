@@ -1,4 +1,4 @@
-export const getFileExtensionFromBase64String = (
+export const utilGetFileTypeFromBase64String = (
   base64String: string,
 ): string | undefined => {
   let fileExtension
