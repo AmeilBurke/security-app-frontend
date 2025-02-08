@@ -1,18 +1,7 @@
+import { AlertDetails } from "@/utils/types/indexTypes"
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
-interface alertDetailState {
-  alerts: {
-    alertDetail_id: number
-    alertDetail_bannedPersonId: number | null
-    alertDetail_name: string
-    alertDetail_imageName: string
-    alertDetails_alertReason: string
-    alertDetails_startTime: string
-    alertDetails_alertUploadedBy: number
-  }[]
-}
-
-const initialState: alertDetailState = {
+const initialState: { alerts: AlertDetails[] } = {
   alerts: [
     {
       alertDetail_id: -1,
@@ -33,7 +22,10 @@ export const alertDetailsSlice = createSlice({
     getAlertDetails: state => {
       return state
     },
-    setAlertDetails: (state, action: PayloadAction<alertDetailState>) => {
+    setAlertDetails: (
+      state,
+      action: PayloadAction<{ alerts: AlertDetails[] }>,
+    ) => {
       if (state.alerts[0].alertDetail_id === -1) {
         state.alerts = action.payload.alerts
       } else {

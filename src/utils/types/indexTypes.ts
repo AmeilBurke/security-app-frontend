@@ -13,17 +13,16 @@ export type Account = {
   account_email: string
   account_name: string
   account_roleId: number
+  role_name: {
+    role_id: number
+    role_name: string
+  }
 }
 
 export type Venue = {
   venue_id: number
   venue_name: string
   venue_imagePath: string
-}
-
-export type Role = {
-  role_id: number
-  role_name: string
 }
 
 export type BannedPerson = {

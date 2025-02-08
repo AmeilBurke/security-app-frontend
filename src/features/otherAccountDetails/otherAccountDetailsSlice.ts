@@ -8,6 +8,10 @@ const initialState: { other_accounts: Account[] } = {
       account_email: "",
       account_name: "",
       account_roleId: -1,
+      role_name: {
+        role_id: -1,
+        role_name: "",
+      },
     },
   ],
 }

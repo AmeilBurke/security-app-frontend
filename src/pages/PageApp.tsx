@@ -1,20 +1,21 @@
 import { useEffect, useRef } from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
-import { toaster, Toaster } from "@/components/ui/toaster"
 import { getSocket } from "@/socket"
 import { Account, AlertDetails, BannedPerson, Venue } from "@/utils/types/indexTypes"
-import { setAlertDetails } from "@/features/alertDetails/alertDetailsSlice"
-import { fetchIndividualAccountDetails } from "@/api-requests/get/accounts/fetchIndividualAccountDetails"
-import { fetchProfileInformationFromJwt } from "@/api-requests/get/accounts/fetchProfileInformationFromJwt"
-import { setUserAccountDetails } from "@/features/userAccountDetails/userAccountDetailsSlice"
-import { utilAxiosErrorToast } from "@/utils/utilAxiosErrorToast"
 import axios, { AxiosResponse } from "axios"
-import { fetchAllAccountsDetails } from "@/api-requests/get/accounts/fetchAllAccountsDetails"
+import { utilAxiosErrorToast } from "@/utils/utilAxiosErrorToast"
+import { setUserAccountDetails } from "@/features/userAccountDetails/userAccountDetailsSlice"
 import { setOtherAccountDetails } from "@/features/otherAccountDetails/otherAccountDetailsSlice"
-import { fetchAllVenues } from "@/api-requests/get/venues/fetchAllVenues"
 import { setVenues } from "@/features/venues/venuesSlice"
 import { setBannedPeople } from "@/features/bannedPeople/bannedPeopleSlice"
+import { setAlertDetails } from "@/features/alertDetails/alertDetailsSlice"
+import { fetchProfileInformationFromJwt } from "@/api-requests/get/accounts/fetchProfileInformationFromJwt"
+import { fetchIndividualAccountDetails } from "@/api-requests/get/accounts/fetchIndividualAccountDetails"
+import { fetchAllVenues } from "@/api-requests/get/venues/fetchAllVenues"
+import { fetchAllAccountsDetails } from "@/api-requests/get/accounts/fetchAllAccountsDetails"
 import { fetchAllBannedPeople } from "@/api-requests/get/banned-people/fetchAllBannedPeople"
+import { fetchAllAlertDetails } from "@/api-requests/get/alertDetails/fetchAllAlertDetails"
+import { toaster, Toaster } from "@/components/ui/toaster"
 
 const PageApp = () => {
     const dispatch = useAppDispatch()
@@ -26,6 +27,7 @@ const PageApp = () => {
     const allOtherAccountsDetails = useAppSelector(state => state.otherAccountDetailsSlice.other_accounts)
     const allVenues = useAppSelector(state => state.venuesSlice.venues)
     const allBannedPeople = useAppSelector(state => state.bannedPeopleSlice)
+    const allActiveAlerts = useAppSelector(state => state.alertDetailsSlice.alerts)
 
     const autoLoginHandler = async () => {
         const fetchProfileInformationFromJwtResult =
@@ -49,14 +51,6 @@ const PageApp = () => {
                 (fetchIndividualAccountDetailsResult as AxiosResponse).data,
             ),
         )
-    }
-
-    const onConnect = () => {
-        console.log(`WebSocket ID: ${socket.id}`)
-
-        if (socket.recovered) {
-            console.log(`Websocket ID: ${socket.id} was recovered`)
-        }
     }
 
     const onAlertCreate = (data: {
@@ -102,6 +96,7 @@ const PageApp = () => {
         }
     }
 
+    // auto login
     useEffect(() => {
         if (jwtToken !== null && jwtToken !== "" && !hasTriedAutoLogIn.current) {
             autoLoginHandler()
@@ -109,7 +104,15 @@ const PageApp = () => {
         }
     }, [])
 
+    // websocket connection
     useEffect(() => {
+        const onConnect = () => {
+            console.log(`WebSocket ID: ${socket.id}`)
+            if (socket.recovered) {
+                console.log(`Websocket ID: ${socket.id} was recovered`)
+            }
+        }
+
         if (jwtToken !== null && jwtToken !== "" && !socket.connected) {
             socket.on("connect", onConnect)
             socket.on("onAlertCreate", onAlertCreate)
@@ -127,7 +130,7 @@ const PageApp = () => {
         }
     }, [])
 
-    // for testing api calls
+    // api calls
     useEffect(() => {
         const fetchAllOtherAccountsDetailsHandler = async () => {
             const fetchAllAccountsDetailsResult = await fetchAllAccountsDetails()
@@ -151,7 +154,7 @@ const PageApp = () => {
         const fetchAllBannedPeopleHandler = async () => {
             const fetchAllBannedPeopleResult = await fetchAllBannedPeople()
             console.log(fetchAllBannedPeopleResult)
-            
+
             if (axios.isAxiosError(fetchAllBannedPeopleResult)) {
                 utilAxiosErrorToast(fetchAllBannedPeopleResult)
             } else {
@@ -159,16 +162,33 @@ const PageApp = () => {
             }
         }
 
-        if (userAccountDetails.account_id !== -1 && allOtherAccountsDetails[0].account_id === -1) {
-            fetchAllOtherAccountsDetailsHandler()
+        const fetchAllAlertDetailsHandler = async () => {
+            const fetchAllAlertDetailsResult = await fetchAllAlertDetails()
+            console.log(fetchAllAlertDetailsResult)
+
+            if (axios.isAxiosError(fetchAllAlertDetailsResult)) {
+                utilAxiosErrorToast(fetchAllAlertDetailsResult)
+            } else {
+                dispatch(setAlertDetails({ alerts: fetchAllAlertDetailsResult.data as AlertDetails[] }))
+            }
         }
 
-        if (userAccountDetails.account_id !== -1 && allVenues[0].venue_id === -1) {
-            fetchAllVenuesHandler()
-        }
+        if (userAccountDetails.account_id !== -1) {
+            if (allOtherAccountsDetails[0].account_id === -1) {
+                fetchAllOtherAccountsDetailsHandler()
+            }
 
-        if (userAccountDetails.account_id !== -1 && allBannedPeople.active_bans[0].bannedPerson_id === -1) {
-            fetchAllBannedPeopleHandler()
+            if (allVenues[0].venue_id === -1) {
+                fetchAllVenuesHandler()
+            }
+
+            if (allBannedPeople.active_bans[0].bannedPerson_id === -1) {
+                fetchAllBannedPeopleHandler()
+            }
+
+            if (allActiveAlerts[0].alertDetail_id === -1) {
+                fetchAllAlertDetailsHandler()
+            }
         }
 
     }, [userAccountDetails])

@@ -6,6 +6,10 @@ const initialState: Account = {
   account_email: "",
   account_name: "",
   account_roleId: -1,
+  role_name: {
+    role_id: -1,
+    role_name: "",
+  },
 }
 
 export const userAccountDetailsSlice = createSlice({
@@ -20,6 +24,10 @@ export const userAccountDetailsSlice = createSlice({
       state.account_email = action.payload.account_email
       state.account_name = action.payload.account_name
       state.account_roleId = action.payload.account_roleId
+      state.role_name = {
+        role_id: action.payload.role_name.role_id,
+        role_name: action.payload.role_name.role_name,
+      }
     },
   },
 })
