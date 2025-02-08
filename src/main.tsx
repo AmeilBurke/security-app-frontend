@@ -5,10 +5,10 @@ import { store } from "./app/store"
 import { Provider as ChakraProvider } from "@/components/ui/provider"
 import { BrowserRouter, Route, Routes } from "react-router";
 import PageDashboard from "./pages/PageDashboard"
-import PageIndividualVenue from "./pages/PageIndividualVenue"
 import PageApp from "./pages/PageApp"
 import './main.css'
 import { Toaster } from "@/components/ui/toaster"
+
 
 const container = document.getElementById("root")
 
@@ -23,7 +23,7 @@ if (container) {
             <PageApp />
             <Routes>
               <Route path="/" element={<PageDashboard />} ></Route>
-              <Route path="/venue/:venueId" element={<PageIndividualVenue />} ></Route>
+              {/* <Route path="/venue/:venueId" element={} ></Route> */}
             </Routes>
             <Toaster />
           </BrowserRouter>

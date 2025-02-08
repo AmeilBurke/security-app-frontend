@@ -16,6 +16,9 @@ import { fetchAllAccountsDetails } from "@/api-requests/get/accounts/fetchAllAcc
 import { fetchAllBannedPeople } from "@/api-requests/get/banned-people/fetchAllBannedPeople"
 import { fetchAllAlertDetails } from "@/api-requests/get/alertDetails/fetchAllAlertDetails"
 import { toaster, Toaster } from "@/components/ui/toaster"
+import { useColorMode, useColorModeValue } from "@/components/ui/color-mode"
+import { Button } from "@chakra-ui/react/button"
+import { GoSun, GoMoon } from "react-icons/go"
 
 const PageApp = () => {
     const dispatch = useAppDispatch()
@@ -28,6 +31,7 @@ const PageApp = () => {
     const allVenues = useAppSelector(state => state.venuesSlice.venues)
     const allBannedPeople = useAppSelector(state => state.bannedPeopleSlice)
     const allActiveAlerts = useAppSelector(state => state.alertDetailsSlice.alerts)
+    const { toggleColorMode } = useColorMode()
 
     const autoLoginHandler = async () => {
         const fetchProfileInformationFromJwtResult =
@@ -196,6 +200,7 @@ const PageApp = () => {
     return (
         <>
             <Toaster />
+            <Button variant="ghost" onClick={toggleColorMode}>{useColorModeValue(<GoSun />, <GoMoon />)}</Button>
             {/* need to add navbar here */}
         </>
     )

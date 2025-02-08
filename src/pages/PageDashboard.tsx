@@ -1,7 +1,9 @@
 import { useAppSelector } from "@/app/hooks"
 import PageLogin from "./PageLogin"
-import { Spinner, VStack } from "@chakra-ui/react"
+import { Input, Spinner, VStack, InputAddon } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
+import { InputGroup } from "@/components/ui/input-group"
+
 
 const PageDashboard = () => {
   const jwtToken = localStorage.getItem("jwt")
@@ -27,7 +29,14 @@ const PageDashboard = () => {
   if (accountId !== -1) {
     return (
       <VStack w="full" p={0} m={0}>
-        <h1>Good Job</h1>
+        <InputGroup children={
+          <>
+            <InputAddon>+234</InputAddon>
+            <Input type='tel' placeholder='phone number' />
+          </>
+        }>
+
+        </InputGroup>
       </VStack>
     )
   }
