@@ -41,3 +41,13 @@ export type BanDetail = {
   banDetails_isBanPending: boolean
   banDetails_banUploadedBy: number
 }
+
+export type PrismaClientKnownRequestError = {
+  name: string
+  code: string
+  clientVersion: string
+  meta: {
+    modelName: string
+    cause: string
+  }
+}

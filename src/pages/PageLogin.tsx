@@ -12,6 +12,8 @@ import { Box, Button, Heading, Input, VStack } from "@chakra-ui/react"
 import axios, { AxiosError, AxiosResponse } from "axios"
 import { useEffect, useRef, useState } from "react"
 import { GoHash, GoPerson, GoSignIn } from "react-icons/go";
+import { PrismaClientKnownRequestError } from "../utils/types/indexTypes"
+import { isPrismaClientKnownRequestError } from "@/utils/helper-functions/indexHelperFunctions"
 
 const PageLogin = () => {
   const [email, setEmail] = useState<string>("")
@@ -28,11 +30,17 @@ const PageLogin = () => {
           description: "Check your email & password then try again.",
           type: "error",
         })
+        return
       } else {
         jwtResult = await fetchJwtToken(email, password)
+        console.log(jwtResult)
 
+        // need to do this error checking for all api requests
         if (axios.isAxiosError(jwtResult)) {
           utilAxiosErrorToast(jwtResult)
+          return
+        } else if (isPrismaClientKnownRequestError(jwtResult)) {
+          utilAxiosErrorToast(jwtResult.data)
           return
         } else {
           localStorage.setItem("jwt", jwtResult.data)
@@ -53,14 +61,19 @@ const PageLogin = () => {
       if (axios.isAxiosError(fetchProfileInformationFromJwtResult)) {
         utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
         return
+      } else if (isPrismaClientKnownRequestError(fetchProfileInformationFromJwtResult)) {
+        utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
+        return
       }
 
-      const fetchIndividualAccountDetailsResult =
-        await fetchIndividualAccountDetails(
-          (fetchProfileInformationFromJwtResult as AxiosResponse).data.sub,
-        )
+      const fetchIndividualAccountDetailsResult = await fetchIndividualAccountDetails(
+        (fetchProfileInformationFromJwtResult as AxiosResponse).data.sub,
+      )
 
       if (axios.isAxiosError(fetchIndividualAccountDetailsResult)) {
+        utilAxiosErrorToast(fetchIndividualAccountDetailsResult)
+        return
+      } else if (isPrismaClientKnownRequestError(fetchIndividualAccountDetailsResult)) {
         utilAxiosErrorToast(fetchIndividualAccountDetailsResult)
         return
       }
