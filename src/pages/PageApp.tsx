@@ -20,6 +20,7 @@ import { useColorMode, useColorModeValue } from "@/components/ui/color-mode"
 import { Button } from "@chakra-ui/react/button"
 import { GoSun, GoMoon } from "react-icons/go"
 import { isPrismaClientKnownRequestError } from "@/utils/helper-functions/indexHelperFunctions"
+import ComponentNavbar from "@/components/navbar/ComponentNavbar"
 
 const PageApp = () => {
     const dispatch = useAppDispatch()
@@ -32,7 +33,6 @@ const PageApp = () => {
     const allVenues = useAppSelector(state => state.venuesSlice.venues)
     const allBannedPeople = useAppSelector(state => state.bannedPeopleSlice)
     const allActiveAlerts = useAppSelector(state => state.alertDetailsSlice.alerts)
-    const { toggleColorMode } = useColorMode()
 
     const autoLoginHandler = async () => {
         const fetchProfileInformationFromJwtResult = await fetchProfileInformationFromJwt()
@@ -217,8 +217,9 @@ const PageApp = () => {
     return (
         <>
             <Toaster />
-            <Button variant="ghost" onClick={toggleColorMode}>{useColorModeValue(<GoSun />, <GoMoon />)}</Button>
-            {/* need to add navbar here */}
+            {
+                userAccountDetails.account_id !== -1 ? <ComponentNavbar /> : null
+            }
         </>
     )
 }
