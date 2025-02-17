@@ -8,7 +8,7 @@ import { Toaster, toaster } from "@/components/ui/toaster"
 import { setUserAccountDetails } from "@/features/userAccountDetails/userAccountDetailsSlice"
 import { getSocket } from "@/socket"
 import { utilAxiosErrorToast } from "@/utils/utilAxiosErrorToast"
-import { Box, Button, Heading, Input, VStack } from "@chakra-ui/react"
+import { Box, Button, Center, Heading, Input, VStack } from "@chakra-ui/react"
 import axios, { AxiosError, AxiosResponse } from "axios"
 import { useEffect, useRef, useState } from "react"
 import { GoHash, GoPerson, GoSignIn } from "react-icons/go";
@@ -94,34 +94,38 @@ const PageLogin = () => {
   }
 
   return (
-    <Box>
-      <VStack>
-        <Heading>Log In</Heading>
-        <InputGroup startElement={<GoPerson />} >
-          <Input
-            type="text"
-            placeholder="Email"
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              setEmail(event.target.value)
-            }}
-          />
-        </InputGroup>
-        <InputGroup startElement={<GoHash />} >
-          <Input
-            type="text"
-            placeholder="Password"
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              setPassword(event.target.value)
-            }}
-          />
-        </InputGroup>
+    <Box mx={12} h="100vh">
+      <Center h="full">
+        <VStack spaceY={4}>
+          <Heading>Log In</Heading>
+          <Box w="full" spaceY={2} >
+            <InputGroup w="full" startElement={<GoPerson />} >
+              <Input
+                type="text"
+                placeholder="Email"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  setEmail(event.target.value)
+                }}
+              />
+            </InputGroup>
+            <InputGroup w="full" startElement={<GoHash />} >
+              <Input
+                type="password"
+                placeholder="Password"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  setPassword(event.target.value)
+                }}
+              />
+            </InputGroup>
+          </Box>
 
 
-        <Button onClick={() => {
-          logUserInHandler()
-        }}><GoSignIn />Log In</Button>
+          <Button w="full" onClick={() => {
+            logUserInHandler()
+          }}>Log In<GoSignIn /></Button>
 
-      </VStack>
+        </VStack>
+      </Center>
     </Box>
   )
 }

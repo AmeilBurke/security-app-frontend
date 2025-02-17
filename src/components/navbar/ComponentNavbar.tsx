@@ -1,4 +1,4 @@
-import { Button, Center, Heading, HStack, MenuOpenChangeDetails, VStack, Text, Separator } from '@chakra-ui/react'
+import { Button, Center, Heading, HStack, MenuOpenChangeDetails, VStack, Text, Separator, Link as ChakraLink } from '@chakra-ui/react'
 import { GoSun, GoMoon, GoSignOut, GoListUnordered } from 'react-icons/go'
 import { useColorMode, useColorModeValue } from '../ui/color-mode'
 import {
@@ -16,6 +16,8 @@ import { useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { Account } from '@/utils/types/indexTypes'
 import { setUserAccountDetails } from '@/features/userAccountDetails/userAccountDetailsSlice'
+import { Link, Route } from "react-router";
+
 
 
 const ComponentNavbar = () => {
@@ -61,8 +63,13 @@ const ComponentNavbar = () => {
         </DrawerHeader>
         <DrawerBody spaceY={['10']}>
           <Separator />
-          <Button variant="ghost" w="full" pl={[0]} justifyContent={['start']} onClick={toggleColorMode} fontSize={['md']}>Theme: {useColorModeValue(<Text>Light</Text>, <Text>Dark</Text>)}</Button>
-          <Button variant="ghost" w="full" pl={[0]} justifyContent={['start']} fontSize={['md']}>Account Settings</Button>
+          <Button onClick={toggleColorMode} variant="ghost" w="full" pl={[0]} justifyContent={['start']} fontSize={['md']}>Theme: {useColorModeValue(<Text>Light</Text>, <Text>Dark</Text>)}</Button>
+          <ChakraLink asChild w="full" pl={[0]} justifyContent={['start']} fontSize={['md']} _hover={{textDecoration: 'none'}}>
+            <Link to='/' onClick={() => setOpen(false)} ><Button variant="ghost" w="full" pl={[0]} justifyContent={['start']} fontSize={['md']}>Dashboard</Button></Link>
+          </ChakraLink>
+          <ChakraLink asChild w="full" pl={[0]} justifyContent={['start']} fontSize={['md']} _hover={{textDecoration: 'none'}}>
+            <Link to='/account-settings' onClick={() => setOpen(false)} ><Button variant="ghost" w="full" pl={[0]} justifyContent={['start']} fontSize={['md']}>Settings</Button></Link>
+          </ChakraLink>
         </DrawerBody>
         <DrawerFooter>
           <Center w="full" pl={[0]} justifyContent={['start']}><Button variant="plain" onClick={signOutHandler}>Sign out <GoSignOut /> </Button></Center>

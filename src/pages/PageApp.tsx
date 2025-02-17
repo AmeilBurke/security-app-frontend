@@ -16,9 +16,6 @@ import { fetchAllAccountsDetails } from "@/api-requests/get/accounts/fetchAllAcc
 import { fetchAllBannedPeople } from "@/api-requests/get/banned-people/fetchAllBannedPeople"
 import { fetchAllAlertDetails } from "@/api-requests/get/alertDetails/fetchAllAlertDetails"
 import { toaster, Toaster } from "@/components/ui/toaster"
-import { useColorMode, useColorModeValue } from "@/components/ui/color-mode"
-import { Button } from "@chakra-ui/react/button"
-import { GoSun, GoMoon } from "react-icons/go"
 import { isPrismaClientKnownRequestError } from "@/utils/helper-functions/indexHelperFunctions"
 import ComponentNavbar from "@/components/navbar/ComponentNavbar"
 

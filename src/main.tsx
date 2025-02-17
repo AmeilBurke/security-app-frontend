@@ -1,13 +1,14 @@
 import React from "react"
 import { createRoot } from "react-dom/client"
-import { Provider } from "react-redux"
+import { Provider as ReduxProvider } from "react-redux"
 import { store } from "./app/store"
-import { Provider as ChakraProvider } from "@/components/ui/provider"
 import { BrowserRouter, Route, Routes } from "react-router";
 import PageDashboard from "./pages/PageDashboard"
 import PageApp from "./pages/PageApp"
 import './main.css'
 import { Toaster } from "@/components/ui/toaster"
+import { Provider as ChakraProvider } from "@/components/ui/provider"
+import { ThemeProvider } from "next-themes";
 
 
 const container = document.getElementById("root")
@@ -17,18 +18,20 @@ if (container) {
 
   root.render(
     <React.StrictMode>
-      <Provider store={store}>
-        <ChakraProvider>
-          <BrowserRouter>
-            <PageApp />
-            <Routes>
-              <Route path="/" element={<PageDashboard />} ></Route>
-              {/* <Route path="/venue/:venueId" element={} ></Route> */}
-            </Routes>
-            <Toaster />
-          </BrowserRouter>
+      <ReduxProvider store={store}>
+        <ChakraProvider >
+          <ThemeProvider  >
+            <BrowserRouter>
+              <PageApp />
+              <Routes>
+                <Route path="/" element={<PageDashboard />} ></Route>
+                {/* <Route path="/venue/:venueId" element={} ></Route> */}
+              </Routes>
+              <Toaster />
+            </BrowserRouter>
+          </ThemeProvider>
         </ChakraProvider>
-      </Provider>
+      </ReduxProvider>
     </React.StrictMode>,
   )
 } else {
