@@ -10,7 +10,6 @@ export const fetchJwtToken = async (
       user_password: password,
     })
     .then((response: AxiosResponse) => {
-      console.log(response)
       return response
     })
     .catch((error: AxiosError) => {

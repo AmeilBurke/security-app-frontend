@@ -33,9 +33,7 @@ const PageLogin = () => {
         return
       } else {
         jwtResult = await fetchJwtToken(email, password)
-        console.log(jwtResult)
 
-        // need to do this error checking for all api requests
         if (axios.isAxiosError(jwtResult)) {
           utilAxiosErrorToast(jwtResult)
           return

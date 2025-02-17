@@ -19,6 +19,7 @@ import { toaster, Toaster } from "@/components/ui/toaster"
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode"
 import { Button } from "@chakra-ui/react/button"
 import { GoSun, GoMoon } from "react-icons/go"
+import { isPrismaClientKnownRequestError } from "@/utils/helper-functions/indexHelperFunctions"
 
 const PageApp = () => {
     const dispatch = useAppDispatch()
@@ -34,11 +35,13 @@ const PageApp = () => {
     const { toggleColorMode } = useColorMode()
 
     const autoLoginHandler = async () => {
-        const fetchProfileInformationFromJwtResult =
-            await fetchProfileInformationFromJwt()
+        const fetchProfileInformationFromJwtResult = await fetchProfileInformationFromJwt()
 
         if (axios.isAxiosError(fetchProfileInformationFromJwtResult)) {
             utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
+        } else if (isPrismaClientKnownRequestError(fetchProfileInformationFromJwtResult)) {
+            utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
+            return
         }
 
         const fetchIndividualAccountDetailsResult =
@@ -48,6 +51,9 @@ const PageApp = () => {
 
         if (axios.isAxiosError(fetchIndividualAccountDetailsResult)) {
             utilAxiosErrorToast(fetchIndividualAccountDetailsResult)
+        } else if (isPrismaClientKnownRequestError(fetchIndividualAccountDetailsResult)) {
+            utilAxiosErrorToast(fetchIndividualAccountDetailsResult)
+            return
         }
 
         dispatch(
@@ -140,6 +146,9 @@ const PageApp = () => {
             const fetchAllAccountsDetailsResult = await fetchAllAccountsDetails()
             if (axios.isAxiosError(fetchAllAccountsDetailsResult)) {
                 utilAxiosErrorToast(fetchAllAccountsDetailsResult)
+            } else if (isPrismaClientKnownRequestError(fetchAllAccountsDetailsResult)) {
+                utilAxiosErrorToast(fetchAllAccountsDetailsResult)
+                return
             } else {
                 const resultsWithoutUserAccount = (fetchAllAccountsDetailsResult.data as Account[]).filter(account => account.account_id !== userAccountDetails.account_id)
                 dispatch(setOtherAccountDetails({ other_accounts: resultsWithoutUserAccount }))
@@ -150,6 +159,9 @@ const PageApp = () => {
             const fetchAllVenuesResult = await fetchAllVenues()
             if (axios.isAxiosError(fetchAllVenuesResult)) {
                 utilAxiosErrorToast(fetchAllVenuesResult)
+            } else if (isPrismaClientKnownRequestError(fetchAllVenuesResult)) {
+                utilAxiosErrorToast(fetchAllVenuesResult)
+                return
             } else {
                 dispatch(setVenues({ venues: fetchAllVenuesResult.data as Venue[] }))
             }
@@ -157,10 +169,12 @@ const PageApp = () => {
 
         const fetchAllBannedPeopleHandler = async () => {
             const fetchAllBannedPeopleResult = await fetchAllBannedPeople()
-            console.log(fetchAllBannedPeopleResult)
 
             if (axios.isAxiosError(fetchAllBannedPeopleResult)) {
                 utilAxiosErrorToast(fetchAllBannedPeopleResult)
+            } else if (isPrismaClientKnownRequestError(fetchAllBannedPeopleResult)) {
+                utilAxiosErrorToast(fetchAllBannedPeopleResult)
+                return
             } else {
                 dispatch(setBannedPeople({ active_bans: fetchAllBannedPeopleResult.data.active_bans as BannedPerson[], non_active_bans: fetchAllBannedPeopleResult.data.non_active_bans as BannedPerson[] }))
             }
@@ -168,10 +182,13 @@ const PageApp = () => {
 
         const fetchAllAlertDetailsHandler = async () => {
             const fetchAllAlertDetailsResult = await fetchAllAlertDetails()
-            console.log(fetchAllAlertDetailsResult)
 
             if (axios.isAxiosError(fetchAllAlertDetailsResult)) {
                 utilAxiosErrorToast(fetchAllAlertDetailsResult)
+            }
+            else if (isPrismaClientKnownRequestError(fetchAllAlertDetailsResult)) {
+                utilAxiosErrorToast(fetchAllAlertDetailsResult)
+                return
             } else {
                 dispatch(setAlertDetails({ alerts: fetchAllAlertDetailsResult.data as AlertDetails[] }))
             }
