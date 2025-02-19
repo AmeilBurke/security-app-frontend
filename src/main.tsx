@@ -9,6 +9,8 @@ import './main.css'
 import { Toaster } from "@/components/ui/toaster"
 import { Provider as ChakraProvider } from "@/components/ui/provider"
 import { ThemeProvider } from "next-themes";
+import PageAccountSettings from "./pages/PageAccountSettings";
+import { system } from "./themes";
 
 
 const container = document.getElementById("root")
@@ -20,16 +22,15 @@ if (container) {
     <React.StrictMode>
       <ReduxProvider store={store}>
         <ChakraProvider >
-          <ThemeProvider  >
-            <BrowserRouter>
-              <PageApp />
-              <Routes>
-                <Route path="/" element={<PageDashboard />} ></Route>
-                {/* <Route path="/venue/:venueId" element={} ></Route> */}
-              </Routes>
-              <Toaster />
-            </BrowserRouter>
-          </ThemeProvider>
+          <BrowserRouter>
+            <PageApp />
+            <Routes>
+              <Route path="/" element={<PageDashboard />} ></Route>
+              <Route path="/account-settings" element={<PageAccountSettings />} ></Route>
+              {/* <Route path="/venue/:venueId" element={} ></Route> */}
+            </Routes>
+            <Toaster />
+          </BrowserRouter>
         </ChakraProvider>
       </ReduxProvider>
     </React.StrictMode>,

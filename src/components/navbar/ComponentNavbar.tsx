@@ -1,5 +1,5 @@
-import { Button, Center, Heading, HStack, MenuOpenChangeDetails, VStack, Text, Separator, Link as ChakraLink } from '@chakra-ui/react'
-import { GoSun, GoMoon, GoSignOut, GoListUnordered } from 'react-icons/go'
+import { Button, Center, Heading, MenuOpenChangeDetails, VStack, Text, Separator, Link as ChakraLink } from '@chakra-ui/react'
+import { GoSignOut, GoListUnordered } from 'react-icons/go'
 import { useColorMode, useColorModeValue } from '../ui/color-mode'
 import {
   DrawerBackdrop,
@@ -14,9 +14,12 @@ import {
 } from "@/components/ui/drawer"
 import { useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
-import { Account } from '@/utils/types/indexTypes'
-import { setUserAccountDetails } from '@/features/userAccountDetails/userAccountDetailsSlice'
-import { Link, Route } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { resetALertDetailsState } from '@/features/alertDetails/alertDetailsSlice'
+import { resetBannedPeopleState } from '@/features/bannedPeople/bannedPeopleSlice'
+import { resetOtherAccountDetailsState } from '@/features/otherAccountDetails/otherAccountDetailsSlice'
+import { resetUserAccountDetailsState } from '@/features/userAccountDetails/userAccountDetailsSlice'
+import { resetVenuesState } from '@/features/venues/venuesSlice'
 
 
 
@@ -25,21 +28,19 @@ const ComponentNavbar = () => {
   const [open, setOpen] = useState<boolean>(false)
   const dispatch = useAppDispatch()
   const userAccountDetails = useAppSelector(state => state.userAccountDetailsSlice)
+  const navigate = useNavigate()
 
   const signOutHandler = () => {
     localStorage.removeItem('jwt')
-    const accountDefaults: Account = {
-      account_id: -1,
-      account_email: "",
-      account_name: "",
-      account_roleId: -1,
-      role_name: {
-        role_id: -1,
-        role_name: ""
-      }
-    }
-    dispatch(setUserAccountDetails(accountDefaults))
-    window.location.reload()
+
+    dispatch(resetALertDetailsState())
+    dispatch(resetBannedPeopleState())
+    dispatch(resetOtherAccountDetailsState())
+    dispatch(resetUserAccountDetailsState())
+    dispatch(resetVenuesState())
+
+    navigate('/')
+    // window.location.reload()
   }
 
   return (
@@ -47,7 +48,7 @@ const ComponentNavbar = () => {
     <DrawerRoot size={['xs']} open={open} onOpenChange={(element: MenuOpenChangeDetails) => setOpen(element.open)}>
       <DrawerBackdrop />
       <DrawerTrigger asChild>
-        <Button variant="plain">
+        <Button marginTop={[4]} variant="plain">
           <GoListUnordered />
         </Button>
       </DrawerTrigger>
@@ -64,10 +65,10 @@ const ComponentNavbar = () => {
         <DrawerBody spaceY={['10']}>
           <Separator />
           <Button onClick={toggleColorMode} variant="ghost" w="full" pl={[0]} justifyContent={['start']} fontSize={['md']}>Theme: {useColorModeValue(<Text>Light</Text>, <Text>Dark</Text>)}</Button>
-          <ChakraLink asChild w="full" pl={[0]} justifyContent={['start']} fontSize={['md']} _hover={{textDecoration: 'none'}}>
+          <ChakraLink asChild w="full" pl={[0]} justifyContent={['start']} fontSize={['md']} _hover={{ textDecoration: 'none' }}>
             <Link to='/' onClick={() => setOpen(false)} ><Button variant="ghost" w="full" pl={[0]} justifyContent={['start']} fontSize={['md']}>Dashboard</Button></Link>
           </ChakraLink>
-          <ChakraLink asChild w="full" pl={[0]} justifyContent={['start']} fontSize={['md']} _hover={{textDecoration: 'none'}}>
+          <ChakraLink asChild w="full" pl={[0]} justifyContent={['start']} fontSize={['md']} _hover={{ textDecoration: 'none' }}>
             <Link to='/account-settings' onClick={() => setOpen(false)} ><Button variant="ghost" w="full" pl={[0]} justifyContent={['start']} fontSize={['md']}>Settings</Button></Link>
           </ChakraLink>
         </DrawerBody>

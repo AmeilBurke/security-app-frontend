@@ -29,9 +29,13 @@ export const otherAccountDetailsSlice = createSlice({
     ) => {
       state.other_accounts = action.payload.other_accounts
     },
+    resetOtherAccountDetailsState: state => (state = initialState),
   },
 })
 
-export const { getOtherAccountDetails, setOtherAccountDetails } =
-  otherAccountDetailsSlice.actions
+export const {
+  getOtherAccountDetails,
+  setOtherAccountDetails,
+  resetOtherAccountDetailsState,
+} = otherAccountDetailsSlice.actions
 export default otherAccountDetailsSlice.reducer

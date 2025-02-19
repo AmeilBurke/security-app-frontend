@@ -38,8 +38,9 @@ export const bannedPeopleSlice = createSlice({
       state.active_bans = action.payload.active_bans
       state.non_active_bans = action.payload.non_active_bans
     },
+    resetBannedPeopleState: state => (state = initialState),
   },
 })
 
-export const { getBannedPeople, setBannedPeople } = bannedPeopleSlice.actions
+export const { getBannedPeople, setBannedPeople, resetBannedPeopleState } = bannedPeopleSlice.actions
 export default bannedPeopleSlice.reducer

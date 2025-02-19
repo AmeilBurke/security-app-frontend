@@ -32,8 +32,9 @@ export const alertDetailsSlice = createSlice({
         state.alerts = [...state.alerts, ...action.payload.alerts]
       }
     },
+    resetALertDetailsState: state => (state = initialState),
   },
 })
 
-export const { getAlertDetails, setAlertDetails } = alertDetailsSlice.actions
+export const { getAlertDetails, setAlertDetails, resetALertDetailsState } = alertDetailsSlice.actions
 export default alertDetailsSlice.reducer

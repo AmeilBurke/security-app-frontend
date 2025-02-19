@@ -21,8 +21,9 @@ export const venuesSlice = createSlice({
     setVenues: (state, action: PayloadAction<{ venues: Venue[] }>) => {
       state.venues = action.payload.venues
     },
+    resetVenuesState: state => (state = initialState),
   },
 })
 
-export const { getVenues, setVenues } = venuesSlice.actions
+export const { getVenues, setVenues, resetVenuesState } = venuesSlice.actions
 export default venuesSlice.reducer

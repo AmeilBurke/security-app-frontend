@@ -29,8 +29,9 @@ export const userAccountDetailsSlice = createSlice({
         role_name: action.payload.role_name.role_name,
       }
     },
+    resetUserAccountDetailsState: state => (state = initialState),
   },
 })
 
-export const { getUserAccountDetails, setUserAccountDetails } = userAccountDetailsSlice.actions
+export const { getUserAccountDetails, setUserAccountDetails, resetUserAccountDetailsState } = userAccountDetailsSlice.actions
 export default userAccountDetailsSlice.reducer
