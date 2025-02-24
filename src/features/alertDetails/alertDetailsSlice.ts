@@ -1,40 +1,56 @@
+import { fetchAllAlertDetails } from "@/api-requests/get/alertDetails/fetchAllAlertDetails"
 import { AlertDetails } from "@/utils/types/indexTypes"
-import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+import axios from "axios"
 
-const initialState: { alerts: AlertDetails[] } = {
-  alerts: [
-    {
-      alertDetail_id: -1,
-      alertDetail_bannedPersonId: null,
-      alertDetail_name: "",
-      alertDetail_imageName: "",
-      alertDetails_alertReason: "",
-      alertDetails_startTime: "",
-      alertDetails_alertUploadedBy: -1,
-    },
-  ],
+export const fetchAlertDetailsData = createAsyncThunk<any>(
+  "account/fetchAlertDetailsData",
+  async () => {
+    const result = await fetchAllAlertDetails()
+
+    if (axios.isAxiosError(result)) {
+      return result
+    } else {
+      return result.data
+    }
+  },
+)
+
+export interface AlertDetailsState {
+  data: { alerts: AlertDetails[] | null }
+  error: string | null
+  isLoading: boolean
+}
+
+const initialState: AlertDetailsState = {
+  data: { alerts: null },
+  error: null,
+  isLoading: false,
 }
 
 export const alertDetailsSlice = createSlice({
   name: "alert-details",
   initialState,
   reducers: {
-    getAlertDetails: state => {
-      return state
-    },
-    setAlertDetails: (
-      state,
-      action: PayloadAction<{ alerts: AlertDetails[] }>,
-    ) => {
-      if (state.alerts[0].alertDetail_id === -1) {
-        state.alerts = action.payload.alerts
-      } else {
-        state.alerts = [...state.alerts, ...action.payload.alerts]
-      }
-    },
-    resetALertDetailsState: state => (state = initialState),
+    resetAlertDetailsState: state => (state = initialState),
+  },
+  extraReducers: builder => {
+    builder
+      .addCase(fetchAlertDetailsData.pending, state => {
+        state.isLoading = true
+      })
+      .addCase(fetchAlertDetailsData.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.data = action.payload
+      })
+      .addCase(fetchAlertDetailsData.rejected, (state, action) => {
+        state.isLoading = false
+        state.error =
+          action.error.message ||
+          "There was an error getting your account details"
+      })
   },
 })
 
-export const { getAlertDetails, setAlertDetails, resetALertDetailsState } = alertDetailsSlice.actions
+export const { resetAlertDetailsState } = alertDetailsSlice.actions
 export default alertDetailsSlice.reducer

@@ -1,23 +1,23 @@
 import { useEffect, useRef } from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { getSocket } from "@/socket"
-import { Account, AlertDetails, BannedPerson, Venue } from "@/utils/types/indexTypes"
+import { Account, AlertDetails } from "@/utils/types/indexTypes"
 import axios, { AxiosResponse } from "axios"
 import { utilAxiosErrorToast } from "@/utils/utilAxiosErrorToast"
-import { setUserAccountDetails } from "@/features/userAccountDetails/userAccountDetailsSlice"
-import { setOtherAccountDetails } from "@/features/otherAccountDetails/otherAccountDetailsSlice"
-import { setVenues } from "@/features/venues/venuesSlice"
-import { setBannedPeople } from "@/features/bannedPeople/bannedPeopleSlice"
-import { setAlertDetails } from "@/features/alertDetails/alertDetailsSlice"
 import { fetchProfileInformationFromJwt } from "@/api-requests/get/accounts/fetchProfileInformationFromJwt"
 import { fetchIndividualAccountDetails } from "@/api-requests/get/accounts/fetchIndividualAccountDetails"
 import { fetchAllVenues } from "@/api-requests/get/venues/fetchAllVenues"
 import { fetchAllAccountsDetails } from "@/api-requests/get/accounts/fetchAllAccountsDetails"
 import { fetchAllBannedPeople } from "@/api-requests/get/banned-people/fetchAllBannedPeople"
 import { fetchAllAlertDetails } from "@/api-requests/get/alertDetails/fetchAllAlertDetails"
-import { toaster, Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster"
 import { isPrismaClientKnownRequestError } from "@/utils/helper-functions/indexHelperFunctions"
 import ComponentNavbar from "@/components/navbar/ComponentNavbar"
+import { fetchOtherAccountData } from "@/features/otherAccountDetails/otherAccountDetailsSlice"
+import { fetchUserAccountData } from "@/features/userAccountDetails/userAccountDetailsSlice"
+import { fetchAllVenuesData } from "@/features/venues/venuesSlice"
+import { fetchAllBannedPeopleData } from "@/features/bannedPeople/bannedPeopleSlice"
+import { fetchAlertDetailsData } from "@/features/alertDetails/alertDetailsSlice"
 
 const PageApp = () => {
     const dispatch = useAppDispatch()
@@ -25,22 +25,23 @@ const PageApp = () => {
     const socket = getSocket()
     const timestampOfLastAlert = useRef<Date | undefined>(undefined)
     const hasTriedAutoLogIn = useRef<boolean>(false)
-    const userAccountDetails = useAppSelector(state => state.userAccountDetailsSlice)
-    const allOtherAccountsDetails = useAppSelector(state => state.otherAccountDetailsSlice.other_accounts)
-    const allVenues = useAppSelector(state => state.venuesSlice.venues)
-    const allBannedPeople = useAppSelector(state => state.bannedPeopleSlice)
-    const allActiveAlerts = useAppSelector(state => state.alertDetailsSlice.alerts)
+    const userAccountState = useAppSelector(state => state.userAccountDetailsSlice)
+    const otherAccountState = useAppSelector(state => state.otherAccountDetailsSlice)
+    const allVenuesState = useAppSelector(state => state.venuesSlice)
+    const allBannedPeopleState = useAppSelector(state => state.bannedPeopleSlice)
+    const allAlertDetailsState = useAppSelector(state => state.alertDetailsSlice)
 
     const autoLoginHandler = async () => {
         const fetchProfileInformationFromJwtResult = await fetchProfileInformationFromJwt()
 
         if (axios.isAxiosError(fetchProfileInformationFromJwtResult)) {
             utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
-        } else if (isPrismaClientKnownRequestError(fetchProfileInformationFromJwtResult)) {
+        } else if (
+            isPrismaClientKnownRequestError(fetchProfileInformationFromJwtResult)
+        ) {
             utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
             return
         }
-
         const fetchIndividualAccountDetailsResult =
             await fetchIndividualAccountDetails(
                 (fetchProfileInformationFromJwtResult as AxiosResponse).data.sub,
@@ -48,60 +49,62 @@ const PageApp = () => {
 
         if (axios.isAxiosError(fetchIndividualAccountDetailsResult)) {
             utilAxiosErrorToast(fetchIndividualAccountDetailsResult)
-        } else if (isPrismaClientKnownRequestError(fetchIndividualAccountDetailsResult)) {
+            return
+        } else if (
+            isPrismaClientKnownRequestError(fetchIndividualAccountDetailsResult)
+        ) {
             utilAxiosErrorToast(fetchIndividualAccountDetailsResult)
             return
         }
 
         dispatch(
-            setUserAccountDetails(
-                (fetchIndividualAccountDetailsResult as AxiosResponse).data,
-            ),
+            fetchUserAccountData(fetchIndividualAccountDetailsResult.data.account_id),
         )
     }
 
-    const onAlertCreate = (data: {
-        latestAlert: AlertDetails
-        latestAlertTime: string
-    }) => {
-        const [day, month, year] = data.latestAlertTime
-            .split("T")[0]
-            .split("/")
-            .map(stringToConvert => Number(stringToConvert))
-        const [hours, minutes, seconds, milliseconds] = data.latestAlertTime
-            .split("T")[1]
-            .split(":")
-            .map(stringToConvert => Number(stringToConvert))
+    // need to check this with asyncthunk change
+    // const onAlertCreate = (data: {
+    //     latestAlert: AlertDetails
+    //     latestAlertTime: string
+    // }) => {
+    //     const [day, month, year] = data.latestAlertTime
+    //         .split("T")[0]
+    //         .split("/")
+    //         .map(stringToConvert => Number(stringToConvert))
+    //     const [hours, minutes, seconds, milliseconds] = data.latestAlertTime
+    //         .split("T")[1]
+    //         .split(":")
+    //         .map(stringToConvert => Number(stringToConvert))
 
-        const newAlertTimestamp = new Date(
-            year,
-            month - 1,
-            day,
-            hours,
-            minutes,
-            seconds,
-            milliseconds,
-        )
+    //     const newAlertTimestamp = new Date(
+    //         year,
+    //         month - 1,
+    //         day,
+    //         hours,
+    //         minutes,
+    //         seconds,
+    //         milliseconds,
+    //     )
 
-        if (timestampOfLastAlert.current !== undefined) {
-            console.log(
-                `timestampOfLastAlert.current: ${timestampOfLastAlert.current <= newAlertTimestamp}`,
-            )
-        }
+    //     if (timestampOfLastAlert.current !== undefined) {
+    //         console.log(
+    //             `timestampOfLastAlert.current: ${timestampOfLastAlert.current <= newAlertTimestamp}`,
+    //         )
+    //     }
 
-        if (
-            timestampOfLastAlert.current === undefined ||
-            timestampOfLastAlert.current < newAlertTimestamp
-        ) {
-            timestampOfLastAlert.current = newAlertTimestamp
-            dispatch(setAlertDetails({ alerts: [data.latestAlert] }))
+    //     if (
+    //         timestampOfLastAlert.current === undefined ||
+    //         timestampOfLastAlert.current < newAlertTimestamp
+    //     ) {
+    //         timestampOfLastAlert.current = newAlertTimestamp
+    //         dispatch(setAlertDetails({ alerts: [data.latestAlert] }))
 
-            toaster.create({
-                title: "New Alert!",
-                description: "A new alert has been uploaded",
-            })
-        }
-    }
+    //         toaster.create({
+    //             title: "New Alert!",
+    //             description: "A new alert has been uploaded",
+    //         })
+    //     }
+    // }
 
     // auto login
     useEffect(() => {
@@ -122,7 +125,7 @@ const PageApp = () => {
 
         if (jwtToken !== null && jwtToken !== "" && !socket.connected) {
             socket.on("connect", onConnect)
-            socket.on("onAlertCreate", onAlertCreate)
+            // socket.on("onAlertCreate", onAlertCreate)
             // need to add update
             socket.connect()
         }
@@ -130,7 +133,7 @@ const PageApp = () => {
         return () => {
             if (socket.connected) {
                 socket.off("connect", onConnect)
-                socket.off("onAlertCreate", onAlertCreate)
+                // socket.off("onAlertCreate", onAlertCreate)
                 // need to socket.off() update
                 socket.disconnect()
             }
@@ -143,12 +146,18 @@ const PageApp = () => {
             const fetchAllAccountsDetailsResult = await fetchAllAccountsDetails()
             if (axios.isAxiosError(fetchAllAccountsDetailsResult)) {
                 utilAxiosErrorToast(fetchAllAccountsDetailsResult)
-            } else if (isPrismaClientKnownRequestError(fetchAllAccountsDetailsResult)) {
+            } else if (
+                isPrismaClientKnownRequestError(fetchAllAccountsDetailsResult)
+            ) {
                 utilAxiosErrorToast(fetchAllAccountsDetailsResult)
                 return
             } else {
-                const resultsWithoutUserAccount = (fetchAllAccountsDetailsResult.data as Account[]).filter(account => account.account_id !== userAccountDetails.account_id)
-                dispatch(setOtherAccountDetails({ other_accounts: resultsWithoutUserAccount }))
+                const resultsWithoutUserAccount = (
+                    fetchAllAccountsDetailsResult.data as Account[]
+                ).filter(
+                    account => account.account_id !== userAccountState.data?.account_id,
+                )
+                dispatch(fetchOtherAccountData())
             }
         }
 
@@ -160,7 +169,7 @@ const PageApp = () => {
                 utilAxiosErrorToast(fetchAllVenuesResult)
                 return
             } else {
-                dispatch(setVenues({ venues: fetchAllVenuesResult.data as Venue[] }))
+                dispatch(fetchAllVenuesData())
             }
         }
 
@@ -173,7 +182,7 @@ const PageApp = () => {
                 utilAxiosErrorToast(fetchAllBannedPeopleResult)
                 return
             } else {
-                dispatch(setBannedPeople({ active_bans: fetchAllBannedPeopleResult.data.active_bans as BannedPerson[], non_active_bans: fetchAllBannedPeopleResult.data.non_active_bans as BannedPerson[] }))
+                dispatch(fetchAllBannedPeopleData())
             }
         }
 
@@ -182,41 +191,37 @@ const PageApp = () => {
 
             if (axios.isAxiosError(fetchAllAlertDetailsResult)) {
                 utilAxiosErrorToast(fetchAllAlertDetailsResult)
-            }
-            else if (isPrismaClientKnownRequestError(fetchAllAlertDetailsResult)) {
+            } else if (isPrismaClientKnownRequestError(fetchAllAlertDetailsResult)) {
                 utilAxiosErrorToast(fetchAllAlertDetailsResult)
                 return
             } else {
-                dispatch(setAlertDetails({ alerts: fetchAllAlertDetailsResult.data as AlertDetails[] }))
+                dispatch(fetchAlertDetailsData())
             }
         }
 
-        if (userAccountDetails.account_id !== -1) {
-            if (allOtherAccountsDetails[0].account_id === -1) {
+        if (userAccountState.data !== null) {
+            if (otherAccountState.data.other_accounts === null) {
                 fetchAllOtherAccountsDetailsHandler()
             }
 
-            if (allVenues[0].venue_id === -1) {
+            if (allVenuesState.data.all_venues === null) {
                 fetchAllVenuesHandler()
             }
 
-            if (allBannedPeople.active_bans[0].bannedPerson_id === -1) {
+            if (allBannedPeopleState.data === null) {
                 fetchAllBannedPeopleHandler()
             }
 
-            if (allActiveAlerts[0].alertDetail_id === -1) {
+            if (allAlertDetailsState.data === null) {
                 fetchAllAlertDetailsHandler()
             }
         }
-
-    }, [userAccountDetails])
+    }, [userAccountState])
 
     return (
         <>
             <Toaster />
-            {
-                userAccountDetails.account_id !== -1 ? <ComponentNavbar /> : null
-            }
+            {userAccountState.data !== null ? <ComponentNavbar /> : null}
         </>
     )
 }

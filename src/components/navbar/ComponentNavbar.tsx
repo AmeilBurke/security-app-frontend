@@ -15,10 +15,10 @@ import {
 import { useState } from 'react'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { Link, useNavigate } from "react-router";
-import { resetALertDetailsState } from '@/features/alertDetails/alertDetailsSlice'
+import { resetAlertDetailsState } from '@/features/alertDetails/alertDetailsSlice'
 import { resetBannedPeopleState } from '@/features/bannedPeople/bannedPeopleSlice'
-import { resetOtherAccountDetailsState } from '@/features/otherAccountDetails/otherAccountDetailsSlice'
-import { resetUserAccountDetailsState } from '@/features/userAccountDetails/userAccountDetailsSlice'
+import { resetOtherAccountsState } from '@/features/otherAccountDetails/otherAccountDetailsSlice'
+import { resetUserAccountState } from '@/features/userAccountDetails/userAccountDetailsSlice'
 import { resetVenuesState } from '@/features/venues/venuesSlice'
 
 
@@ -33,10 +33,10 @@ const ComponentNavbar = () => {
   const signOutHandler = () => {
     localStorage.removeItem('jwt')
 
-    dispatch(resetALertDetailsState())
+    dispatch(resetUserAccountState())
+    dispatch(resetOtherAccountsState())
     dispatch(resetBannedPeopleState())
-    dispatch(resetOtherAccountDetailsState())
-    dispatch(resetUserAccountDetailsState())
+    dispatch(resetAlertDetailsState())
     dispatch(resetVenuesState())
 
     navigate('/')
@@ -56,10 +56,10 @@ const ComponentNavbar = () => {
         <DrawerCloseTrigger />
         <DrawerHeader>
           <DrawerTitle>
-            <VStack>
+            {/* <VStack>
               <Heading w="full" textTransform={['capitalize']} >{userAccountDetails.account_name}</Heading>
               <Text w="full" textStyle={['md']} color={['gray.500']} textTransform={['capitalize']}>{userAccountDetails.role_name.role_name}</Text>
-            </VStack>
+            </VStack> */}
           </DrawerTitle>
         </DrawerHeader>
         <DrawerBody spaceY={['10']}>

@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { toaster } from "@/components/ui/toaster"
-import { Box, Button, Heading, Input, StackSeparator, VStack } from "@chakra-ui/react"
+import { Box, Button, Heading, Input, Spinner, StackSeparator, VStack } from "@chakra-ui/react"
 import React, { useEffect, useRef, useState } from "react"
 import { GoPerson, GoHash, GoMultiSelect, GoTrash, GoUpload } from "react-icons/go"
 import {
@@ -16,11 +16,13 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { updateUserAccountDetails } from "@/api-requests/update/updateUserAccountDetails"
 import { Account } from "@/utils/types/indexTypes"
 import PageLogin from "./PageLogin"
+import axios from "axios"
+import { utilAxiosErrorToast } from "@/utils/utilAxiosErrorToast"
+import ComponentCenteredSpinner from "@/components/centered-spinner/ComponentCenteredSpinner"
+import { fetchUserAccountData, setUserAccountState } from "@/features/userAccountDetails/userAccountDetailsSlice"
 
 const PageAccountSettings = () => {
-  const userAccountDetails = useAppSelector(
-    state => state.userAccountDetailsSlice,
-  )
+  const userAccountState = useAppSelector(state => state.userAccountDetailsSlice)
   const dispatch = useAppDispatch()
 
   const [accountEmail, setAccountEmail] = useState<string>("")
@@ -28,7 +30,6 @@ const PageAccountSettings = () => {
   const [accountConfirmationPassword, setAccountConfirmationPassword] = useState<string>("")
   const [accountName, setAccountName] = useState<string>("")
   const [hasEditedAField, setHasEditedAField] = useState<boolean>(false)
-
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
   const accountEmailHandler = (text: string) => {
@@ -86,7 +87,7 @@ const PageAccountSettings = () => {
 
   const updateAccountDetailsHandler = async () => {
 
-    let userDetailsToUpdate: { account_email?: string, account_password?: string, account_name?: string } = {}
+    let userDetailsToUpdate: { account_email?: string, account_old_password: string | undefined, account_password?: string, account_name?: string } = { account_old_password: undefined }
 
     if (accountEmail !== "") {
       userDetailsToUpdate.account_email = accountEmail
@@ -100,13 +101,36 @@ const PageAccountSettings = () => {
       userDetailsToUpdate.account_name = accountName
     }
 
-    console.log(userDetailsToUpdate)
+    if (typeof userAccountState.data === null || typeof userAccountState.data?.account_id !== 'number') {
+      return
+    }
 
-    const test = await updateUserAccountDetails(userAccountDetails.account_id, userDetailsToUpdate)
-    console.log(test)
+    const updateUserAccountDetailsResult = await updateUserAccountDetails(userAccountState.data.account_id, userDetailsToUpdate)
+
+    if (axios.isAxiosError(updateUserAccountDetailsResult)) {
+      utilAxiosErrorToast(updateUserAccountDetailsResult)
+      return
+    }
+
+    dispatch(fetchUserAccountData(updateUserAccountDetailsResult.data.account_id))
+
+    toaster.success({
+      title: 'Update success!',
+      description: 'your account has been updated successfully'
+    })
+
+    setHasEditedAField(false)
+
+    // location.reload()
   }
 
-  if (userAccountDetails.account_id === -1) {
+  if (userAccountState.isLoading) {
+    return (
+      <ComponentCenteredSpinner />
+    )
+  }
+
+  if (userAccountState.data === null && !userAccountState.isLoading) {
     return <PageLogin />
   }
 
@@ -122,7 +146,7 @@ const PageAccountSettings = () => {
             <Input
               ref={(element) => { inputRefs.current["accountEmail"] = element }}
               type="text"
-              placeholder={userAccountDetails.account_email}
+              placeholder={userAccountState.data?.account_email}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 accountEmailHandler(event.target.value)
               }}
@@ -131,6 +155,7 @@ const PageAccountSettings = () => {
         </Field>
 
         <VStack w="full" gap={8}>
+
           <Field label="Change your password">
             <InputGroup w="full" startElement={<GoHash />}>
               <Input
@@ -163,7 +188,7 @@ const PageAccountSettings = () => {
             <Input
               ref={(element) => { inputRefs.current["accountName"] = element }}
               type="text"
-              placeholder={userAccountDetails.account_name}
+              placeholder={userAccountState.data?.account_name}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 accountNameHandler(event.target.value)
               }}

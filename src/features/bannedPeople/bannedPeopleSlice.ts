@@ -1,46 +1,59 @@
+import { fetchAllBannedPeople } from "@/api-requests/get/banned-people/fetchAllBannedPeople"
 import { BannedPerson } from "@/utils/types/indexTypes"
-import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
+import axios from "axios"
 
-const initialState: {
-  active_bans: BannedPerson[]
-  non_active_bans: BannedPerson[]
-} = {
-  active_bans: [
-    {
-      bannedPerson_id: -1,
-      bannedPerson_name: "",
-      bannedPerson_imageName: "",
-    },
-  ],
-  non_active_bans: [
-    {
-      bannedPerson_id: -1,
-      bannedPerson_name: "",
-      bannedPerson_imageName: "",
-    },
-  ],
+export const fetchAllBannedPeopleData = createAsyncThunk<any>(
+  "bannedPeople/fetchAllBannedPeopleData",
+  async () => {
+    const result = await fetchAllBannedPeople()
+
+    if (axios.isAxiosError(result)) {
+      return result
+    } else {
+      return result.data
+    }
+  },
+)
+
+export interface allBannedPeopleState {
+  data: {
+    active_bans: BannedPerson[]
+    non_active_bans: BannedPerson[]
+  } | null
+  error: string | null
+  isLoading: boolean
+}
+
+const initialState: allBannedPeopleState = {
+  data: null,
+  error: null,
+  isLoading: false,
 }
 
 export const bannedPeopleSlice = createSlice({
   name: "banned-people",
   initialState,
   reducers: {
-    getBannedPeople: state => {
-      return state
-    },
-    setBannedPeople: (
-      state,
-      action: PayloadAction<{
-        active_bans: BannedPerson[]
-        non_active_bans: BannedPerson[]
-      }>,
-    ) => {
-      state.active_bans = action.payload.active_bans
-      state.non_active_bans = action.payload.non_active_bans
-    },
     resetBannedPeopleState: state => (state = initialState),
+  },
+  extraReducers: builder => {
+    builder
+      .addCase(fetchAllBannedPeopleData.pending, state => {
+        state.isLoading = true
+      })
+      .addCase(fetchAllBannedPeopleData.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.data = action.payload
+      })
+      .addCase(fetchAllBannedPeopleData.rejected, (state, action) => {
+        state.isLoading = false
+        state.error =
+          action.error.message ||
+          "There was an error getting the list of banned people"
+      })
   },
 })
 
-export const { getBannedPeople, setBannedPeople, resetBannedPeopleState } = bannedPeopleSlice.actions
+export const { resetBannedPeopleState } = bannedPeopleSlice.actions
 export default bannedPeopleSlice.reducer

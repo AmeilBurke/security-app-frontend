@@ -2,18 +2,16 @@ import { fetchIndividualAccountDetails } from "@/api-requests/get/accounts/fetch
 import { fetchJwtToken } from "@/api-requests/get/accounts/fetchJwtToken"
 import { fetchProfileInformationFromJwt } from "@/api-requests/get/accounts/fetchProfileInformationFromJwt"
 import { useAppDispatch } from "@/app/hooks"
-import { useColorMode } from "@/components/ui/color-mode"
 import { InputGroup } from "@/components/ui/input-group"
-import { Toaster, toaster } from "@/components/ui/toaster"
-import { setUserAccountDetails } from "@/features/userAccountDetails/userAccountDetailsSlice"
+import { toaster } from "@/components/ui/toaster"
 import { getSocket } from "@/socket"
 import { utilAxiosErrorToast } from "@/utils/utilAxiosErrorToast"
 import { Box, Button, Center, Heading, Input, VStack } from "@chakra-ui/react"
 import axios, { AxiosError, AxiosResponse } from "axios"
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { GoHash, GoPerson, GoSignIn } from "react-icons/go";
-import { PrismaClientKnownRequestError } from "../utils/types/indexTypes"
 import { isPrismaClientKnownRequestError } from "@/utils/helper-functions/indexHelperFunctions"
+import { fetchUserAccountData } from "@/features/userAccountDetails/userAccountDetailsSlice"
 
 const PageLogin = () => {
   const [email, setEmail] = useState<string>("")
@@ -76,11 +74,7 @@ const PageLogin = () => {
         return
       }
 
-      dispatch(
-        setUserAccountDetails(
-          (fetchIndividualAccountDetailsResult as AxiosResponse).data,
-        ),
-      )
+      dispatch(fetchUserAccountData(fetchIndividualAccountDetailsResult.data.account_id))
       getSocket().connect()
 
       toaster.create({

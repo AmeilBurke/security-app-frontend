@@ -3,6 +3,8 @@ import axios, { AxiosError } from "axios"
 import { PrismaClientKnownRequestError } from "./types/indexTypes"
 
 export const utilAxiosErrorToast = (error: AxiosError | PrismaClientKnownRequestError) => {
+  console.log(error);
+  
   if(axios.isAxiosError(error)) {
     return toaster.create({
       title: "Error",
