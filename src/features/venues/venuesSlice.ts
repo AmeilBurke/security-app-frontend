@@ -25,7 +25,7 @@ export interface VenuesState {
 const initialState: VenuesState = {
   data: { all_venues: null },
   error: null,
-  isLoading: false,
+  isLoading: true,
 }
 
 export const venuesSlice = createSlice({

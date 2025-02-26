@@ -11,6 +11,7 @@ import { Provider as ChakraProvider } from "@/components/ui/provider"
 import { ThemeProvider } from "next-themes";
 import PageAccountSettings from "./pages/PageAccountSettings";
 import { system } from "./themes";
+import PageIndividualVenue from "./pages/PageIndividualVenue";
 
 
 const container = document.getElementById("root")
@@ -27,7 +28,7 @@ if (container) {
             <Routes>
               <Route path="/" element={<PageDashboard />} ></Route>
               <Route path="/account-settings" element={<PageAccountSettings />} ></Route>
-              {/* <Route path="/venue/:venueId" element={} ></Route> */}
+              <Route path="/venue/:venueId" element={<PageIndividualVenue />} ></Route>
             </Routes>
             <Toaster />
           </BrowserRouter>

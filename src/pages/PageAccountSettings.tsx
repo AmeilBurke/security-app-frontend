@@ -20,6 +20,7 @@ import axios from "axios"
 import { utilAxiosErrorToast } from "@/utils/utilAxiosErrorToast"
 import ComponentCenteredSpinner from "@/components/centered-spinner/ComponentCenteredSpinner"
 import { fetchUserAccountData, setUserAccountState } from "@/features/userAccountDetails/userAccountDetailsSlice"
+import { setHeading } from "@/features/navbarHeading/navbarHeadingSlice"
 
 const PageAccountSettings = () => {
   const userAccountState = useAppSelector(state => state.userAccountDetailsSlice)
@@ -31,6 +32,11 @@ const PageAccountSettings = () => {
   const [accountName, setAccountName] = useState<string>("")
   const [hasEditedAField, setHasEditedAField] = useState<boolean>(false)
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+
+  useEffect(() => {
+    dispatch(setHeading('account settings'))
+  }, [])
+  
 
   const accountEmailHandler = (text: string) => {
     if (text === "") {

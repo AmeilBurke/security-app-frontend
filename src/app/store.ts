@@ -6,6 +6,7 @@ import otherAccountDetailsSlice from "@/features/otherAccountDetails/otherAccoun
 import bannedPeopleSlice from "@/features/bannedPeople/bannedPeopleSlice"
 import alertDetailsSlice from "@/features/alertDetails/alertDetailsSlice"
 import venuesSlice from "@/features/venues/venuesSlice"
+import navbarHeadingSlice from "@/features/navbarHeading/navbarHeadingSlice"
 
 // `combineSlices` automatically combines the reducers using
 // their `reducerPath`s, therefore we no longer need to call `combineReducers`.
@@ -15,6 +16,7 @@ const rootReducer = combineSlices({
   bannedPeopleSlice,
   alertDetailsSlice,
   venuesSlice,
+  navbarHeadingSlice,
 })
 // Infer the `RootState` type from the root reducer
 export type RootState = ReturnType<typeof rootReducer>

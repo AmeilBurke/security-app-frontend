@@ -1,4 +1,4 @@
-import { Button, Center, Heading, MenuOpenChangeDetails, VStack, Text, Separator, Link as ChakraLink } from '@chakra-ui/react'
+import { Button, Center, Heading, MenuOpenChangeDetails, VStack, Text, Separator, Link as ChakraLink, HStack, Box } from '@chakra-ui/react'
 import { GoSignOut, GoListUnordered } from 'react-icons/go'
 import { useColorMode, useColorModeValue } from '../ui/color-mode'
 import {
@@ -27,7 +27,8 @@ const ComponentNavbar = () => {
   const { toggleColorMode } = useColorMode()
   const [open, setOpen] = useState<boolean>(false)
   const dispatch = useAppDispatch()
-  const userAccountDetails = useAppSelector(state => state.userAccountDetailsSlice)
+  const userAccountState = useAppSelector(state => state.userAccountDetailsSlice)
+  const navbarHeadingState = useAppSelector(state => state.navbarHeadingSlice)
   const navigate = useNavigate()
 
   const signOutHandler = () => {
@@ -40,26 +41,33 @@ const ComponentNavbar = () => {
     dispatch(resetVenuesState())
 
     navigate('/')
-    // window.location.reload()
   }
 
   return (
 
     <DrawerRoot size={['xs']} open={open} onOpenChange={(element: MenuOpenChangeDetails) => setOpen(element.open)}>
       <DrawerBackdrop />
-      <DrawerTrigger asChild>
-        <Button marginTop={[4]} variant="plain">
-          <GoListUnordered />
-        </Button>
-      </DrawerTrigger>
+
+      <VStack marginBottom={4} px={4}>
+        <HStack position="relative" w="full" py={4} justifyContent='center' >
+          <DrawerTrigger position='absolute' top={3} left='0' asChild>
+            <Button variant="plain">
+              <GoListUnordered />
+            </Button>
+          </DrawerTrigger>
+          <Heading w="75%" textAlign='center' textTransform='capitalize'>{navbarHeadingState.heading}</Heading>
+        </HStack>
+        <Separator w="full" />
+      </VStack>
+
       <DrawerContent>
         <DrawerCloseTrigger />
         <DrawerHeader>
           <DrawerTitle>
-            {/* <VStack>
-              <Heading w="full" textTransform={['capitalize']} >{userAccountDetails.account_name}</Heading>
-              <Text w="full" textStyle={['md']} color={['gray.500']} textTransform={['capitalize']}>{userAccountDetails.role_name.role_name}</Text>
-            </VStack> */}
+            <VStack>
+              <Heading w="full" textTransform={['capitalize']}>{userAccountState.data?.account_name}</Heading>
+              <Text w="full" textStyle={['md']} color={['gray.500']} textTransform={['capitalize']}>{userAccountState.data?.role_name.role_name}</Text>
+            </VStack>
           </DrawerTitle>
         </DrawerHeader>
         <DrawerBody spaceY={['10']}>

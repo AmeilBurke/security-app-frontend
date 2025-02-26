@@ -1,5 +1,9 @@
 import { fetchAllBannedPeople } from "@/api-requests/get/banned-people/fetchAllBannedPeople"
-import { BannedPerson } from "@/utils/types/indexTypes"
+import {
+  BanDetail,
+  BannedPerson,
+  BannedPersonWithBanDetail,
+} from "@/utils/types/indexTypes"
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit"
 import axios from "axios"
 
@@ -18,8 +22,8 @@ export const fetchAllBannedPeopleData = createAsyncThunk<any>(
 
 export interface allBannedPeopleState {
   data: {
-    active_bans: BannedPerson[]
-    non_active_bans: BannedPerson[]
+    active_bans: BannedPersonWithBanDetail[]
+    non_active_bans: BannedPersonWithBanDetail[]
   } | null
   error: string | null
   isLoading: boolean

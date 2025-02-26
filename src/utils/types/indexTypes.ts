@@ -42,6 +42,8 @@ export type BanDetail = {
   banDetails_banUploadedBy: number
 }
 
+export type BannedPersonWithBanDetail = BannedPerson & { BanDetail: BanDetail[] }
+
 export type PrismaClientKnownRequestError = {
   name: string
   code: string
