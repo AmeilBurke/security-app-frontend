@@ -20,6 +20,7 @@ import { resetBannedPeopleState } from '@/features/bannedPeople/bannedPeopleSlic
 import { resetOtherAccountsState } from '@/features/otherAccountDetails/otherAccountDetailsSlice'
 import { resetUserAccountState } from '@/features/userAccountDetails/userAccountDetailsSlice'
 import { resetVenuesState } from '@/features/venues/venuesSlice'
+import { signOutHandler } from '@/utils/helper-functions/indexHelperFunctions'
 
 
 
@@ -30,18 +31,6 @@ const ComponentNavbar = () => {
   const userAccountState = useAppSelector(state => state.userAccountDetailsSlice)
   const navbarHeadingState = useAppSelector(state => state.navbarHeadingSlice)
   const navigate = useNavigate()
-
-  const signOutHandler = () => {
-    localStorage.removeItem('jwt')
-
-    dispatch(resetUserAccountState())
-    dispatch(resetOtherAccountsState())
-    dispatch(resetBannedPeopleState())
-    dispatch(resetAlertDetailsState())
-    dispatch(resetVenuesState())
-
-    navigate('/')
-  }
 
   return (
 

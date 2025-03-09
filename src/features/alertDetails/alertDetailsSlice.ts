@@ -17,13 +17,13 @@ export const fetchAlertDetailsData = createAsyncThunk<any>(
 )
 
 export interface AlertDetailsState {
-  data: { alerts: AlertDetails[] | null }
+  data: { alerts: AlertDetails[] } | null
   error: string | null
   isLoading: boolean
 }
 
 const initialState: AlertDetailsState = {
-  data: { alerts: null },
+  data: null,
   error: null,
   isLoading: false,
 }
@@ -41,13 +41,13 @@ export const alertDetailsSlice = createSlice({
       })
       .addCase(fetchAlertDetailsData.fulfilled, (state, action) => {
         state.isLoading = false
-        state.data = action.payload
+        state.data = { alerts: action.payload }
       })
       .addCase(fetchAlertDetailsData.rejected, (state, action) => {
         state.isLoading = false
         state.error =
           action.error.message ||
-          "There was an error getting your account details"
+          "There was an error getting alert details details"
       })
   },
 })

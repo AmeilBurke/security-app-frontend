@@ -12,6 +12,8 @@ import { ThemeProvider } from "next-themes";
 import PageAccountSettings from "./pages/PageAccountSettings";
 import { system } from "./themes";
 import PageIndividualVenue from "./pages/PageIndividualVenue";
+import PageLogin from "./pages/PageLogin";
+import PageUploadBan from "./pages/PageUploadBan";
 
 
 const container = document.getElementById("root")
@@ -27,8 +29,11 @@ if (container) {
             <PageApp />
             <Routes>
               <Route path="/" element={<PageDashboard />} ></Route>
+              <Route path="/login" element={<PageLogin />} ></Route>
+              <Route path="/upload-ban" element={<PageUploadBan />} ></Route>
               <Route path="/account-settings" element={<PageAccountSettings />} ></Route>
               <Route path="/venue/:venueId" element={<PageIndividualVenue />} ></Route>
+
             </Routes>
             <Toaster />
           </BrowserRouter>

@@ -8,15 +8,17 @@ import { getSocket } from "@/socket"
 import { utilAxiosErrorToast } from "@/utils/utilAxiosErrorToast"
 import { Box, Button, Center, Heading, Input, VStack } from "@chakra-ui/react"
 import axios, { AxiosError, AxiosResponse } from "axios"
-import { useState } from "react"
-import { GoHash, GoPerson, GoSignIn } from "react-icons/go";
+import { useEffect, useState } from "react"
+import { GoHash, GoPerson, GoSignIn } from "react-icons/go"
 import { isPrismaClientKnownRequestError } from "@/utils/helper-functions/indexHelperFunctions"
 import { fetchUserAccountData } from "@/features/userAccountDetails/userAccountDetailsSlice"
+import { useNavigate } from "react-router"
 
 const PageLogin = () => {
   const [email, setEmail] = useState<string>("")
   const [password, setPassword] = useState<string>("")
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
 
   const logUserInHandler = async () => {
     try {
@@ -52,48 +54,64 @@ const PageLogin = () => {
         return
       }
 
-      const fetchProfileInformationFromJwtResult = await fetchProfileInformationFromJwt()
+      const fetchProfileInformationFromJwtResult =
+        await fetchProfileInformationFromJwt()
 
       if (axios.isAxiosError(fetchProfileInformationFromJwtResult)) {
         utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
         return
-      } else if (isPrismaClientKnownRequestError(fetchProfileInformationFromJwtResult)) {
+      } else if (
+        isPrismaClientKnownRequestError(fetchProfileInformationFromJwtResult)
+      ) {
         utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
         return
       }
 
-      const fetchIndividualAccountDetailsResult = await fetchIndividualAccountDetails(
-        (fetchProfileInformationFromJwtResult as AxiosResponse).data.sub,
-      )
+      const fetchIndividualAccountDetailsResult =
+        await fetchIndividualAccountDetails(
+          (fetchProfileInformationFromJwtResult as AxiosResponse).data.sub,
+        )
 
       if (axios.isAxiosError(fetchIndividualAccountDetailsResult)) {
         utilAxiosErrorToast(fetchIndividualAccountDetailsResult)
         return
-      } else if (isPrismaClientKnownRequestError(fetchIndividualAccountDetailsResult)) {
+      } else if (
+        isPrismaClientKnownRequestError(fetchIndividualAccountDetailsResult)
+      ) {
         utilAxiosErrorToast(fetchIndividualAccountDetailsResult)
         return
       }
 
-      dispatch(fetchUserAccountData(fetchIndividualAccountDetailsResult.data.account_id))
+      dispatch(
+        fetchUserAccountData(
+          fetchIndividualAccountDetailsResult.data.account_id,
+        ),
+      )
       getSocket().connect()
 
       toaster.create({
         title: "Sign In sucessful",
         type: "success",
       })
-
     } catch (error: unknown) {
       console.log(error)
     }
   }
+
+  useEffect(() => {
+    if (localStorage.getItem('jwt')) {
+      navigate('/')
+    }
+  }, [])
+
 
   return (
     <Box mx={12} h="100vh">
       <Center h="full">
         <VStack spaceY={4}>
           <Heading>Log In</Heading>
-          <Box w="full" spaceY={2} >
-            <InputGroup w="full" startElement={<GoPerson />} >
+          <Box w="full" spaceY={2}>
+            <InputGroup w="full" startElement={<GoPerson />}>
               <Input
                 type="text"
                 placeholder="Email"
@@ -102,7 +120,7 @@ const PageLogin = () => {
                 }}
               />
             </InputGroup>
-            <InputGroup w="full" startElement={<GoHash />} >
+            <InputGroup w="full" startElement={<GoHash />}>
               <Input
                 type="password"
                 placeholder="Password"
@@ -113,11 +131,15 @@ const PageLogin = () => {
             </InputGroup>
           </Box>
 
-
-          <Button w="full" onClick={() => {
-            logUserInHandler()
-          }}>Log In<GoSignIn /></Button>
-
+          <Button
+            w="full"
+            onClick={() => {
+              logUserInHandler()
+            }}
+          >
+            Log In
+            <GoSignIn />
+          </Button>
         </VStack>
       </Center>
     </Box>

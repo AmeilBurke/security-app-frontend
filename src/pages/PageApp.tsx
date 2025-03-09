@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { getSocket } from "@/socket"
 import { Account, AlertDetails } from "@/utils/types/indexTypes"
@@ -10,8 +10,11 @@ import { fetchAllVenues } from "@/api-requests/get/venues/fetchAllVenues"
 import { fetchAllAccountsDetails } from "@/api-requests/get/accounts/fetchAllAccountsDetails"
 import { fetchAllBannedPeople } from "@/api-requests/get/banned-people/fetchAllBannedPeople"
 import { fetchAllAlertDetails } from "@/api-requests/get/alertDetails/fetchAllAlertDetails"
-import { Toaster } from "@/components/ui/toaster"
-import { isPrismaClientKnownRequestError } from "@/utils/helper-functions/indexHelperFunctions"
+import { toaster, Toaster } from "@/components/ui/toaster"
+import {
+    isPrismaClientKnownRequestError,
+    signOutHandler,
+} from "@/utils/helper-functions/indexHelperFunctions"
 import ComponentNavbar from "@/components/navbar/ComponentNavbar"
 import { fetchOtherAccountData } from "@/features/otherAccountDetails/otherAccountDetailsSlice"
 import { fetchUserAccountData } from "@/features/userAccountDetails/userAccountDetailsSlice"
@@ -23,19 +26,21 @@ const PageApp = () => {
     const dispatch = useAppDispatch()
     const jwtToken = localStorage.getItem("jwt")
     const socket = getSocket()
-    const timestampOfLastAlert = useRef<Date | undefined>(undefined)
     const hasTriedAutoLogIn = useRef<boolean>(false)
     const userAccountState = useAppSelector(state => state.userAccountDetailsSlice)
     const otherAccountState = useAppSelector(state => state.otherAccountDetailsSlice)
     const allVenuesState = useAppSelector(state => state.venuesSlice)
     const allBannedPeopleState = useAppSelector(state => state.bannedPeopleSlice)
     const allAlertDetailsState = useAppSelector(state => state.alertDetailsSlice)
+    const [hasDisplayedLatestAlert, setHasDisplayedLatestAlert] = useState<boolean>(false)
 
     const autoLoginHandler = async () => {
-        const fetchProfileInformationFromJwtResult = await fetchProfileInformationFromJwt()
+        const fetchProfileInformationFromJwtResult =
+            await fetchProfileInformationFromJwt()
 
         if (axios.isAxiosError(fetchProfileInformationFromJwtResult)) {
             utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
+            signOutHandler()
         } else if (
             isPrismaClientKnownRequestError(fetchProfileInformationFromJwtResult)
         ) {
@@ -62,7 +67,6 @@ const PageApp = () => {
         )
     }
 
-    // need to check this with asyncthunk change
     // const onAlertCreate = (data: {
     //     latestAlert: AlertDetails
     //     latestAlertTime: string
@@ -117,14 +121,42 @@ const PageApp = () => {
     // websocket connection
     useEffect(() => {
         const onConnect = () => {
-            console.log(`WebSocket ID: ${socket.id}`)
+            console.log(`Websocket ID: ${socket.id}`)
+
             if (socket.recovered) {
                 console.log(`Websocket ID: ${socket.id} was recovered`)
             }
         }
 
+        const onBanCreate = (result: {
+            allAlerts: {
+                alertDetail: AlertDetails & {
+                    account_id: {
+                        account_name: string
+                    }
+                }
+            }[]
+        }) => {
+
+            if (hasDisplayedLatestAlert) {
+                setHasDisplayedLatestAlert(false)
+                return
+            }
+
+            toaster.create({
+                title: 'New Alert',
+                description: `${result.allAlerts[result.allAlerts.length - 1].alertDetail.account_id.account_name} has uploaded a new alert`,
+                type: 'info'
+            })
+
+            dispatch(fetchAlertDetailsData())
+
+            setHasDisplayedLatestAlert(true)
+        }
+
         if (jwtToken !== null && jwtToken !== "" && !socket.connected) {
             socket.on("connect", onConnect)
+            socket.on("onBanCreate", result => onBanCreate(result))
             // socket.on("onAlertCreate", onAlertCreate)
             // need to add update
             socket.connect()

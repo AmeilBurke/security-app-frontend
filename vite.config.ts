@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   server: {
     open: true,
+    host: true,
   },
   test: {
     globals: true,

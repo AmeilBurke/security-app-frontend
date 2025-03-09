@@ -6,7 +6,10 @@ let socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined
 export const getSocket = () => {
   if (!socket || typeof socket === undefined) {
     socket = io(import.meta.env.VITE_API_URL, {
-      autoConnect: false,
+      auth: {
+        Authorization: String(localStorage.getItem("jwt")),
+      },
+      transports: ["websocket"],
     })
   }
   return socket
