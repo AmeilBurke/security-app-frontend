@@ -11,16 +11,14 @@ import { fetchAllAccountsDetails } from "@/api-requests/get/accounts/fetchAllAcc
 import { fetchAllBannedPeople } from "@/api-requests/get/banned-people/fetchAllBannedPeople"
 import { fetchAllAlertDetails } from "@/api-requests/get/alertDetails/fetchAllAlertDetails"
 import { toaster, Toaster } from "@/components/ui/toaster"
-import {
-    isPrismaClientKnownRequestError,
-    signOutHandler,
-} from "@/utils/helper-functions/indexHelperFunctions"
+import { isPrismaClientKnownRequestError } from "@/utils/helper-functions/indexHelperFunctions"
 import ComponentNavbar from "@/components/navbar/ComponentNavbar"
-import { fetchOtherAccountData } from "@/features/otherAccountDetails/otherAccountDetailsSlice"
-import { fetchUserAccountData } from "@/features/userAccountDetails/userAccountDetailsSlice"
-import { fetchAllVenuesData } from "@/features/venues/venuesSlice"
-import { fetchAllBannedPeopleData } from "@/features/bannedPeople/bannedPeopleSlice"
-import { fetchAlertDetailsData } from "@/features/alertDetails/alertDetailsSlice"
+import { fetchOtherAccountData, resetOtherAccountsState } from "@/features/otherAccountDetails/otherAccountDetailsSlice"
+import { fetchUserAccountData, resetUserAccountState } from "@/features/userAccountDetails/userAccountDetailsSlice"
+import { fetchAllVenuesData, resetVenuesState } from "@/features/venues/venuesSlice"
+import { fetchAllBannedPeopleData, resetBannedPeopleState } from "@/features/bannedPeople/bannedPeopleSlice"
+import { fetchAlertDetailsData, resetAlertDetailsState } from "@/features/alertDetails/alertDetailsSlice"
+import { useNavigate } from "react-router"
 
 const PageApp = () => {
     const dispatch = useAppDispatch()
@@ -33,6 +31,7 @@ const PageApp = () => {
     const allBannedPeopleState = useAppSelector(state => state.bannedPeopleSlice)
     const allAlertDetailsState = useAppSelector(state => state.alertDetailsSlice)
     const [hasDisplayedLatestAlert, setHasDisplayedLatestAlert] = useState<boolean>(false)
+    const navigate = useNavigate()
 
     const autoLoginHandler = async () => {
         const fetchProfileInformationFromJwtResult =
@@ -40,7 +39,15 @@ const PageApp = () => {
 
         if (axios.isAxiosError(fetchProfileInformationFromJwtResult)) {
             utilAxiosErrorToast(fetchProfileInformationFromJwtResult)
-            signOutHandler()
+            localStorage.removeItem("jwt")
+
+            dispatch(resetUserAccountState())
+            dispatch(resetOtherAccountsState())
+            dispatch(resetBannedPeopleState())
+            dispatch(resetAlertDetailsState())
+            dispatch(resetVenuesState())
+
+            navigate("/")
         } else if (
             isPrismaClientKnownRequestError(fetchProfileInformationFromJwtResult)
         ) {
@@ -154,13 +161,37 @@ const PageApp = () => {
             setHasDisplayedLatestAlert(true)
         }
 
+        const adminOnBanCreate = () => {
+            // needs to be completed, display on seperate page etc...
+            toaster.create({
+                title: 'Toast for admin',
+                description: 'wubueimv',
+                type: 'info'
+            })
+        }
+
+        const onAlertCreate = () => {
+            toaster.create({
+                title: 'New Alert Uploaded',
+                description: 'A new alert has been added',
+                type: 'info'
+            })
+            dispatch(fetchAlertDetailsData())
+        }
+
         if (jwtToken !== null && jwtToken !== "" && !socket.connected) {
             socket.on("connect", onConnect)
-            socket.on("onBanCreate", result => onBanCreate(result))
-            // socket.on("onAlertCreate", onAlertCreate)
+            socket.on("onBanCreate", onBanCreate)
+            socket.on("onAlertCreate", onAlertCreate)
             // need to add update
             socket.connect()
         }
+
+        if (userAccountState.data?.role_name.role_name === 'admin') {
+            socket.on('adminOnBanCreate', adminOnBanCreate)
+        }
+
+        // need to have server emit for admin and other seperately
 
         return () => {
             if (socket.connected) {

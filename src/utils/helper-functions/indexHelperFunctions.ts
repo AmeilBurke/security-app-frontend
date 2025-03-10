@@ -12,18 +12,3 @@ export const isPrismaClientKnownRequestError = (
 ): objectToCheck is PrismaClientKnownRequestError => {
   return objectToCheck.data.name === "PrismaClientKnownRequestError"
 }
-
-export const signOutHandler = () => {
-  const dispatch = useAppDispatch()
-  const navigate = useNavigate()
-
-  localStorage.removeItem("jwt")
-
-  dispatch(resetUserAccountState())
-  dispatch(resetOtherAccountsState())
-  dispatch(resetBannedPeopleState())
-  dispatch(resetAlertDetailsState())
-  dispatch(resetVenuesState())
-
-  navigate("/")
-}

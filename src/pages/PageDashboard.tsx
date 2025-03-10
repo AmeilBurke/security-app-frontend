@@ -39,7 +39,7 @@ const PageDashboard = () => {
         </VStack>
         <ComponentActiveAlertCards />
         <ComponentVenueCards />
-        <ComponentBlanketBannedPersonCards />
+        {/* <ComponentBlanketBannedPersonCards /> */}
       </VStack>
     )
   }

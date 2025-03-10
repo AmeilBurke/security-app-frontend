@@ -17,7 +17,9 @@ export const fetchAlertDetailsData = createAsyncThunk<any>(
 )
 
 export interface AlertDetailsState {
-  data: { alerts: AlertDetails[] } | null
+  data: {
+    alerts: AlertDetails[] & { account_id: { account_name: string } }
+  } | null
   error: string | null
   isLoading: boolean
 }
