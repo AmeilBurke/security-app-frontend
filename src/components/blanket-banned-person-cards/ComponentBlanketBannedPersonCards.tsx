@@ -3,7 +3,7 @@ import { BannedPersonWithBanDetail, Venue } from "@/utils/types/indexTypes"
 import { Box, Heading, Text, VStack, Image } from "@chakra-ui/react"
 import { useEffect, useState } from "react"
 import ComponentCenteredSpinner from "../centered-spinner/ComponentCenteredSpinner"
-import { utilGetFileTypeFromBase64String } from "@/utils/utilGetFileTypeFromBase64String"
+import { utilGetFileTypeFromBase64String } from "@/utils/functions/utilGetFileTypeFromBase64String"
 
 const ComponentBlanketBannedPersonCards = () => {
     const allBannedPeopleState = useAppSelector(state => state.bannedPeopleSlice)

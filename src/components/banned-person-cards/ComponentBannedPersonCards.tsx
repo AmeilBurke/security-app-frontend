@@ -1,5 +1,5 @@
 import { BanDetail, BannedPersonWithBanDetail } from '@/utils/types/indexTypes'
-import { utilGetFileTypeFromBase64String } from '@/utils/utilGetFileTypeFromBase64String'
+import { utilGetFileTypeFromBase64String } from '@/utils/functions/utilGetFileTypeFromBase64String'
 import { VStack, Image, Heading, Text } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import dayjs from 'dayjs';

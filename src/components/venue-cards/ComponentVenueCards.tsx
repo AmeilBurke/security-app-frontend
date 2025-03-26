@@ -2,7 +2,7 @@ import { useAppSelector } from "@/app/hooks"
 import { Venue } from "@/utils/types/indexTypes"
 import { Heading, VStack, Image, SimpleGrid } from "@chakra-ui/react"
 import ComponentCenteredSpinner from "../centered-spinner/ComponentCenteredSpinner"
-import { utilGetFileTypeFromBase64String } from "@/utils/utilGetFileTypeFromBase64String"
+import { utilGetFileTypeFromBase64String } from "@/utils/functions/utilGetFileTypeFromBase64String"
 import { Link as ReactRouterLink } from "react-router"
 
 const ComponentVenueCards = () => {
