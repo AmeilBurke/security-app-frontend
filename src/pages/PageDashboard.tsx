@@ -1,47 +1,47 @@
-// import { useAppDispatch, useAppSelector } from "@/app/hooks"
-// import PageLogin from "./PageLogin"
-// import { Box, Button, VStack } from "@chakra-ui/react"
-// import ComponentCenteredSpinner from "@/components/centered-spinner/ComponentCenteredSpinner"
-// import ComponentActiveAlertCards from "@/components/active-alert-cards/ComponentActiveAlertCards"
-// import ComponentVenueCards from "@/components/venue-cards/ComponentVenueCards"
-// import { setHeading } from "@/features/navbarHeading/navbarHeadingSlice"
-// import { useEffect } from "react"
-// import { Link as ReactRouterLink } from "react-router"
+import { getAllNonPendingBan } from "@/api-requests/banned-people/getAllNonPendingBan"
+import { useAppDispatch, useAppSelector } from "@/app/hooks"
+import ComponentContainer from "@/components/container/ComponentContainer"
+import { setBannedPeopleState } from "@/features/bannedPeopleDetailsSlice"
+import { setNavbarHeadingState } from "@/features/navbarHeadingSlice"
+import { displayErrorToastForAxios } from "@/utils/helper-functions"
+import { isPrismaResultError } from "@/utils/types"
+import { Button, Center, Spinner } from "@chakra-ui/react"
+import { useEffect, useState } from "react"
+import { Link as RouterLink } from "react-router"
 
-// const PageDashboard = () => {
-//   const jwtToken = localStorage.getItem("jwt")
-//   const userAccountState = useAppSelector(state => { return state.userAccountDetailsSlice })
-//   const dispatch = useAppDispatch()
+const PageDashboard = () => {
+  const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true)
+  const stateBannedPeople = useAppSelector(state => state.bannedPeopleDetailsSlice)
+  const dispatch = useAppDispatch()
 
-//   useEffect(() => {
-//     dispatch(setHeading('dashboard'))
-//   }, [])
+  useEffect(() => {
+    const getBannedPeopleHandler = async () => {
+      const result = await getAllNonPendingBan()
 
-//   if (userAccountState.isLoading) {
-//     return <ComponentCenteredSpinner />
-//   }
+      if (isPrismaResultError(result)) {
+        displayErrorToastForAxios(result)
+      }
 
-//   if (jwtToken === null || (jwtToken === "" && !userAccountState.isLoading)) {
-//     return <PageLogin />
-//   }
+      dispatch(setBannedPeopleState(result))
+    }
 
-//   if (userAccountState.data !== null) {
-//     return (
-//       <VStack w="full" p={4} m={0} gap={8}>
-//         <VStack w="full" gap={8} >
-//           <Box w="full">
-//             <ReactRouterLink to={'add-alert'}><Button w="full">Add New Alert</Button></ReactRouterLink>
-//           </Box>
-//           <Box w="full">
-//             <ReactRouterLink to={'upload-ban'}><Button w="full">Add New Ban</Button></ReactRouterLink>
-//           </Box>
-//         </VStack>
-//         <ComponentActiveAlertCards />
-//         <ComponentVenueCards />
-//         {/* <ComponentBlanketBannedPersonCards /> */}
-//       </VStack>
-//     )
-//   }
-// }
+    if (isInitialLoad) {
+      dispatch(setNavbarHeadingState("Dashboard"))
+      getBannedPeopleHandler()
+      setIsInitialLoad(false)
+    }
+  }, [isInitialLoad])
 
-// export default PageDashboard
+  if (isInitialLoad || stateBannedPeople.data === null || stateBannedPeople.isLoading) {
+    return <Spinner />
+  }
+
+
+  return (
+    <RouterLink to="/create-alert">
+      <Button w="full" >Create Alert</Button>
+    </RouterLink>
+  )
+}
+
+export default PageDashboard

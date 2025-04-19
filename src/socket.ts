@@ -6,9 +6,6 @@ let socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined
 export const getSocket = () => {
   if (!socket || typeof socket === undefined) {
     socket = io(import.meta.env.VITE_API_URL, {
-      auth: {
-        Authorization: String(localStorage.getItem("jwt")),
-      },
       transports: ["websocket"],
       reconnection: true,
       reconnectionAttempts: Infinity,
@@ -19,24 +16,3 @@ export const getSocket = () => {
   }
   return socket
 }
-
-
-        // fileReader.readAsDataURL(fileAcceptDetails.files[0])
-        // fileReader.onload = () => {
-        //     const result = fileReader.result?.toString().split(",")[1]
-        //     if (typeof result === "string") {
-        //     } else {
-        //         toaster.create({
-        //             title: "Invalid photo",
-        //             description: "Upload another photo",
-        //         })
-        //         return
-        //     }
-        // }
-        // fileReader.onerror = () => {
-        //     toaster.create({
-        //         title: "Invalid photo",
-        //         description: "Upload another photo",
-        //     })
-        //     return
-        // }

@@ -1,22 +1,18 @@
 import type { Action, ThunkAction } from "@reduxjs/toolkit"
 import { combineSlices, configureStore } from "@reduxjs/toolkit"
 import { setupListeners } from "@reduxjs/toolkit/query"
-import userAccountDetailsSlice from "@/features/userAccountDetails/userAccountDetailsSlice"
-import otherAccountDetailsSlice from "@/features/otherAccountDetails/otherAccountDetailsSlice"
-import bannedPeopleSlice from "@/features/bannedPeople/bannedPeopleSlice"
-import alertDetailsSlice from "@/features/alertDetails/alertDetailsSlice"
-import venuesSlice from "@/features/venues/venuesSlice"
-import navbarHeadingSlice from "@/features/navbarHeading/navbarHeadingSlice"
+import userAccountDetailsSlice from "@/features/userAccountDetailsSlice"
+import navbarHeadingSlice from "@/features/navbarHeadingSlice"
+import bannedPeopleDetailsSlice from "@/features/bannedPeopleDetailsSlice"
+import venuesSlice from "@/features/venuesSlice"
 
 // `combineSlices` automatically combines the reducers using
 // their `reducerPath`s, therefore we no longer need to call `combineReducers`.
 const rootReducer = combineSlices({
   userAccountDetailsSlice,
-  otherAccountDetailsSlice,
-  bannedPeopleSlice,
-  alertDetailsSlice,
-  venuesSlice,
   navbarHeadingSlice,
+  bannedPeopleDetailsSlice,
+  venuesSlice,
 })
 // Infer the `RootState` type from the root reducer
 export type RootState = ReturnType<typeof rootReducer>

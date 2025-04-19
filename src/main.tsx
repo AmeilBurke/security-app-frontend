@@ -1,19 +1,16 @@
 import React from "react"
+import { store } from "./app/store"
 import { createRoot } from "react-dom/client"
 import { Provider as ReduxProvider } from "react-redux"
-import { store } from "./app/store"
+import { Provider as ChakraProvider } from "@/components/ui/provider"
 import { BrowserRouter, Route, Routes } from "react-router";
-import PageDashboard from "./pages/PageDashboard"
-import PageApp from "./pages/PageApp"
 import './main.css'
 import { Toaster } from "@/components/ui/toaster"
-import { Provider as ChakraProvider } from "@/components/ui/provider"
-import { ThemeProvider } from "next-themes";
-import PageAccountSettings from "./pages/PageAccountSettings";
-import { system } from "./themes";
-import PageIndividualVenue from "./pages/PageIndividualVenue";
-import PageLogin from "./pages/PageLogin";
-import PageUploadBan from "./pages/PageUploadBan";
+import PageApp from "./pages/PageApp";
+import PageSignIn from "./pages/PageSignIn";
+import PageDashboard from "./pages/PageDashboard"
+import PageCreateAlert from "./pages/PageCreateAlert"
+import ComponentContainer from "./components/container/ComponentContainer"
 
 
 const container = document.getElementById("root")
@@ -26,16 +23,17 @@ if (container) {
       <ReduxProvider store={store}>
         <ChakraProvider >
           <BrowserRouter>
-            <PageApp />
-            <Routes>
-              <Route path="/" element={<PageDashboard />} ></Route>
-              <Route path="/login" element={<PageLogin />} ></Route>
-              <Route path="/upload-ban" element={<PageUploadBan />} ></Route>
-              <Route path="/account-settings" element={<PageAccountSettings />} ></Route>
-              <Route path="/venue/:venueId" element={<PageIndividualVenue />} ></Route>
-
-            </Routes>
-            <Toaster />
+            <ComponentContainer>
+              <>
+                <PageApp />
+                <Routes>
+                  <Route path="/sign-in" element={<PageSignIn />} ></Route>
+                  <Route path="/" element={<PageDashboard />} ></Route>
+                  <Route path="/create-alert" element={<PageCreateAlert />} ></Route>
+                </Routes>
+                <Toaster />
+              </>
+            </ComponentContainer>
           </BrowserRouter>
         </ChakraProvider>
       </ReduxProvider>

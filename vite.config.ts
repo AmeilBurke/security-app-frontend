@@ -8,6 +8,10 @@ export default defineConfig({
   server: {
     open: true,
     host: true,
+    https: {
+      cert: "C:\\Users\\ameil\\OneDrive\\Documents\\Github Repositories\\certificates\\172.20.112.1.pem",
+      key: "C:\\Users\\ameil\\OneDrive\\Documents\\Github Repositories\\certificates\\172.20.112.1-key.pem",
+    },
   },
   test: {
     globals: true,
