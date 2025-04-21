@@ -5,7 +5,8 @@ import ComponentContainer from "@/components/container/ComponentContainer"
 import { toaster } from "@/components/ui/toaster"
 import { setBannedPeopleState } from "@/features/bannedPeopleDetailsSlice"
 import { setNavbarHeadingState } from "@/features/navbarHeadingSlice"
-import { displayErrorToastForAxios } from "@/utils/helper-functions"
+import { getSocket } from "@/socket"
+import { capitalizeString, displayErrorToastForAxios } from "@/utils/helper-functions"
 import { BannedPerson, isPrismaResultError } from "@/utils/types"
 import {
   Accordion,
@@ -38,6 +39,7 @@ const PageCreateAlert = () => {
   const [inputExistingBannedPersonId, setInputExistingBannedPersonId] = useState<number>(-1)
   const [inputAlertReason, setInputAlertReason] = useState<string>("")
   const dispatch = useAppDispatch()
+  const socket = getSocket()
   const stateBannedPeople = useAppSelector(state => state.bannedPeopleDetailsSlice)
   const [filteredBannedPeople, setFilteredBannedPeople] = useState<BannedPerson[] | null>(null)
 
@@ -153,11 +155,13 @@ const PageCreateAlert = () => {
       return
     }
 
-    toaster.create({
-      title: "Alert Uploaded",
-      description: `An alert for ${inputBannedPersonName !== "" ? inputBannedPersonName : selectedBannedPersonName} has been put out`,
-      type: "success",
-    })
+    // toaster.create({
+    //   title: "Alert Uploaded",
+    //   description: `An alert for ${inputBannedPersonName !== "" ? inputBannedPersonName : selectedBannedPersonName} has been put out`,
+    //   type: "success",
+    // })
+
+    socket.emit('alert_detail_created')
 
     setSelectedBannedPersonName("")
     setInputBannedPersonName("")
@@ -280,6 +284,7 @@ const PageCreateAlert = () => {
         <Input
           type="text"
           placeholder="Enter name"
+          value={inputBannedPersonName}
           disabled={selectedBannedPersonName !== "" ? true : false}
           onChange={event => setInputBannedPersonName(event.target.value)}
         />
@@ -335,6 +340,7 @@ const PageCreateAlert = () => {
       <Button onClick={uploadAlertHandler} w="full">
         Upload Alert
       </Button>
+      <Text>{capitalizeString("ameil burke")}</Text>
     </VStack>
   )
 }
