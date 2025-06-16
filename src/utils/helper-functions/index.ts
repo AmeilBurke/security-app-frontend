@@ -1,6 +1,9 @@
 import { toaster } from "@/components/ui/toaster"
 import { PrismaResultError } from "../types"
 import axios from "axios"
+import { useFileUpload } from "@chakra-ui/react"
+import dayjs from "dayjs"
+import customParseFormat from "dayjs/plugin/customParseFormat"
 
 export const displayErrorToastForAxios = (error: PrismaResultError) => {
   return toaster.create({
@@ -20,4 +23,35 @@ export const capitalizeString = (text: string) => {
     .split(" ")
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ")
+}
+
+export const imageFileUploadHandler = (setUploadedImageFile: React.Dispatch<React.SetStateAction<File | undefined>>) => {
+  return useFileUpload({
+    accept: ["image/jpeg", "image/png", "image/webp"],
+    required: true,
+    maxFiles: 1,
+    onFileAccept: (file) => {
+      setUploadedImageFile(file.files[0])
+    },
+    onFileChange: file => {
+      if (file.rejectedFiles[0]) {
+        toaster.create({
+          title: "Upload Error",
+          description: "The file you tried to upload isn't valid",
+          type: "error",
+        })
+        setUploadedImageFile(undefined)
+        return
+      }
+      setUploadedImageFile(file.acceptedFiles[0])
+    },
+    onFileReject: () => {
+      toaster.create({
+        title: "Upload Error",
+        description: "The file you tried to upload isn't valid",
+        type: "error",
+      })
+      setUploadedImageFile(undefined)
+    },
+  })
 }

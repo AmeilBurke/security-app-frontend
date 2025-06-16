@@ -1,20 +1,20 @@
 import { axiosInstance } from "@/utils/helper-functions"
 import {
+  BannedPerson,
   isPrismaResultError,
   PrismaResultError,
-  Venue,
 } from "@/utils/types"
 import { AxiosResponse } from "axios"
 
-export const getAllVenues = async () => {
+export const getAllBanned = async () => {
   return await axiosInstance
-    .get("/venues")
+    .get("/banned-people/all")
     .then((response: AxiosResponse) => {
-      if (isPrismaResultError(response.data)) {
-        return response.data as PrismaResultError
+      if (isPrismaResultError(response)) {
+        return response as PrismaResultError
       }
 
-      return response.data as Venue[]
+      return response.data as BannedPerson[]
     })
     .catch((error: unknown) => {
       return error as PrismaResultError

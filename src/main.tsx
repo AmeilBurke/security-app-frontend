@@ -9,8 +9,10 @@ import { Toaster } from "@/components/ui/toaster"
 import PageApp from "./pages/PageApp";
 import PageSignIn from "./pages/PageSignIn";
 import PageDashboard from "./pages/PageDashboard"
-import PageCreateAlert from "./pages/PageCreateAlert"
 import ComponentContainer from "./components/container/ComponentContainer"
+// import PageCreateAlert from "./pages/PageCreateAlert"
+import PageCreateBan from "./pages/PageCreateBan"
+import PageCreateAlert from "./pages/PageCreateAlert"
 
 
 const container = document.getElementById("root")
@@ -24,15 +26,14 @@ if (container) {
         <ChakraProvider >
           <BrowserRouter>
             <ComponentContainer>
-              <>
-                <PageApp />
-                <Routes>
-                  <Route path="/sign-in" element={<PageSignIn />} ></Route>
-                  <Route path="/" element={<PageDashboard />} ></Route>
-                  <Route path="/create-alert" element={<PageCreateAlert />} ></Route>
-                </Routes>
-                <Toaster />
-              </>
+              <PageApp />
+              <Routes>
+                <Route path="/sign-in" element={<PageSignIn />}></Route>
+                <Route path="/" element={<PageDashboard />}></Route>
+                <Route path="/create-alert" element={<PageCreateAlert />}></Route>
+                <Route path="/create-ban" element={<PageCreateBan />}></Route>
+              </Routes>
+              <Toaster />
             </ComponentContainer>
           </BrowserRouter>
         </ChakraProvider>

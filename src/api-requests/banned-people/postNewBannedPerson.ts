@@ -2,19 +2,22 @@ import { axiosInstance } from "@/utils/helper-functions"
 import {
   isPrismaResultError,
   PrismaResultError,
-  Venue,
 } from "@/utils/types"
 import { AxiosResponse } from "axios"
 
-export const getAllVenues = async () => {
+export const postNewBannedPerson = async (bannedPersonDetails: FormData) => {
   return await axiosInstance
-    .get("/venues")
+    .post("/banned-people", bannedPersonDetails, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
     .then((response: AxiosResponse) => {
-      if (isPrismaResultError(response.data)) {
-        return response.data as PrismaResultError
+      if (isPrismaResultError(response)) {
+        return response as PrismaResultError
       }
 
-      return response.data as Venue[]
+      return response.data as any
     })
     .catch((error: unknown) => {
       return error as PrismaResultError

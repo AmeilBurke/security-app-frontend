@@ -9,8 +9,8 @@ export default defineConfig({
     open: true,
     host: true,
     https: {
-      cert: "C:\\Users\\ameil\\OneDrive\\Documents\\Github Repositories\\certificates\\172.20.112.1.pem",
-      key: "C:\\Users\\ameil\\OneDrive\\Documents\\Github Repositories\\certificates\\172.20.112.1-key.pem",
+      cert: "C:\\Users\\Ameil\\Documents\\Certificates\\ilt security app\\192.168.1.65.pem",
+      key: "C:\\Users\\Ameil\\Documents\\Certificates\\ilt security app\\192.168.1.65-key.pem",
     },
   },
   test: {

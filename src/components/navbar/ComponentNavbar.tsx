@@ -48,12 +48,13 @@ const ComponentNavbar = () => {
     <DrawerRoot
       size={["xs"]}
       open={open}
+      placement='start'
       onOpenChange={(element: MenuOpenChangeDetails) => setOpen(element.open)}
     >
       <DrawerBackdrop />
 
       <VStack>
-        <Center position="relative" w="full" h="full" py={4} >
+        <Center position="relative" w="full" h="full" py={4}>
           <DrawerTrigger position='absolute' top={4} left={0} asChild >
             <Button p={0} variant='ghost'>
               <GoListUnordered />

@@ -33,6 +33,43 @@ export type BannedPerson = {
   bannedPerson_imagePath: string
 }
 
+export type AlertDetail = {
+  alertDetail_id: number
+  alertDetail_bannedPersonId: number
+  alertDetail_name: string
+  alertDetail_imagePath: string
+  alertDetails_alertReason: string
+  alertDetails_startTime: string
+  alertDetails_alertUploadedBy: number
+  Account: {
+    account_name: string
+  }
+}
+
+export type BanDetail = {
+  alertDetail_id: number
+  alertDetail_bannedPersonId: number
+  alertDetail_name: string
+  alertDetail_imagePath: string
+  alertDetails_alertReason: string
+  alertDetails_startTime: string
+  alertDetails_alertUploadedBy: number
+  Account: {
+    account_name: string
+  }
+}
+
+export type PostBanDetail = {
+  banDetails_bannedPersonId: number
+  banDetails_reason: string
+  banDetails_banEndDate: string
+  banDetails_venueBanIds: number[]
+}
+
+export type BannedPersonWithActiveAlerts = BannedPerson & {
+  AlertDetail: AlertDetail[]
+  BanDetails: BanDetail[]
+}
 export type Venue = {
   venue_id: number
   venue_name: string

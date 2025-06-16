@@ -30,9 +30,8 @@ import { ValueChangeDetails } from "@zag-js/radio-group"
 import { useEffect, useState } from "react"
 import { GoUpload } from "react-icons/go"
 import dayjs from '../utils/helper-functions/dayjs-setup'
-import { postNewAlert } from "@/api-requests/alerts/postNewAlert"
 
-const PageCreateAlert = () => {
+const PageCreateBan = () => {
     const dispatch = useAppDispatch()
     const socket = getSocket()
     const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true)
@@ -45,14 +44,21 @@ const PageCreateAlert = () => {
     const [uploadedImageFile, setUploadedImageFile] = useState<File | undefined>(undefined)
     const fileUploadValue = imageFileUploadHandler(setUploadedImageFile)
 
-    const [inputAlertPersonName, setInputAlertPersonName] = useState<string>("")
+    const [inputBannedPersonName, setInputBannedPersonName] = useState<string>("")
     const [inputBannedPersonId, setInputBannedPersonId] = useState<number>(-1)
     const [inputBannedPersonSearch, setInputBannedPersonSearch] = useState<string>("")
-    const [inputAlertReason, setInputAlertReason] = useState<string>("")
+    const [inputBanReason, setInputBanReason] = useState<string>("")
+
+    const [inputBanEndDate, setInputBanEndDate] = useState<string>("")
+    const [radioBanEndDate, setRadioBanEndDate] = useState<string | null>(null)
+
+    const presetBanDurations = ["3 Months", "6 Months", "1 Year", "2 Years"]
+
+    const [venueCheckboxes, setVenueCheckboxes] = useState<{ label: string; checked: boolean; value: number }[]>([])
 
     useEffect(() => {
-        if (stateNavbarHeading !== "Create Alert") {
-            dispatch(setNavbarHeadingState("Create Alert"))
+        if (stateNavbarHeading !== "Create Ban") {
+            dispatch(setNavbarHeadingState("Create Ban"))
         }
 
         if (stateUser !== null && isInitialLoad) {
@@ -63,17 +69,42 @@ const PageCreateAlert = () => {
     }, [stateNavbarHeading, stateUser, isInitialLoad])
 
     useEffect(() => {
+        if (stateVenues.data !== null) {
+            setVenueCheckboxes(
+                stateVenues.data.map(venue => ({
+                    label: venue.venue_name,
+                    checked: false,
+                    value: venue.venue_id,
+                })),
+            )
+        }
+    }, [stateVenues.data])
+
+    useEffect(() => {
         if (stateAllBannedPeople !== null) {
             setStateAllBannedPeopleFiltered(stateAllBannedPeople)
         }
     }, [stateAllBannedPeople])
 
-    const uploadAlertHandler = async () => {
+
+
+    const allChecked = venueCheckboxes.every(v => v.checked)
+    const indeterminate = venueCheckboxes.some(v => v.checked) && !allChecked
+
+    const uploadBanHandler = async () => {
+
+        const hasVenuebeenSelected = venueCheckboxes.filter(value => {
+            if (value.checked === true) {
+                return value
+            }
+        })
 
         if (
             (uploadedImageFile === undefined && inputBannedPersonId === -1) ||
-            (inputAlertPersonName.trim() === "" && inputBannedPersonId === -1) ||
-            inputAlertReason.trim() === ""
+            (inputBannedPersonName.trim() === "" && inputBannedPersonId === -1) ||
+            inputBanReason.trim() === "" ||
+            (inputBanEndDate.trim() === "" && radioBanEndDate === null) ||
+            hasVenuebeenSelected.length === 0
         ) {
             return toaster.create({
                 title: "Missing Required Fields",
@@ -82,34 +113,97 @@ const PageCreateAlert = () => {
             })
         }
 
-        const alertDetails = new FormData()
-        alertDetails.append('alertDetail_name', inputAlertPersonName)
-        alertDetails.append('alertDetail_alertReason', inputAlertReason)
-        alertDetails.append('file', uploadedImageFile as File)
-
-        if (inputBannedPersonId !== -1) {
-            alertDetails.append('alertDetail_bannedPersonId', String(inputBannedPersonId))
+        if (!dayjs(inputBanEndDate, 'DD/MM/YYYY', true).isValid() && !dayjs(radioBanEndDate, 'DD/MM/YYYY', true).isValid()) {
+            return toaster.create({
+                title: "Invalid Date",
+                description: "Enter a valid date and try again",
+                type: "error",
+            })
         }
 
-        const result = await postNewAlert(alertDetails)
+        let result;
+
+        if (inputBannedPersonId !== -1) {
+            result = postNewBanDetail({
+                banDetails_bannedPersonId: inputBannedPersonId,
+                banDetails_reason: inputBanReason,
+                banDetails_banEndDate: inputBanEndDate !== "" ? dayjs(inputBanEndDate, 'DD-MM-YYYY').toISOString() : dayjs(radioBanEndDate, 'DD-MM-YYYY').toISOString(),
+                banDetails_venueBanIds: hasVenuebeenSelected.map(venue => { return venue.value })
+            })
+        } else {
+            const banDetails = new FormData()
+            banDetails.append("bannedPerson_name", inputBannedPersonName)
+            banDetails.append("file", uploadedImageFile as File)
+            banDetails.append("banDetails_reason", inputBanReason)
+            banDetails.append("banDetails_banEndDate", inputBanEndDate !== "" ? dayjs(inputBanEndDate, 'DD-MM-YYYY').toISOString() : dayjs(radioBanEndDate, 'DD-MM-YYYY').toISOString())
+            banDetails.append("banDetails_venueBanIds", String(hasVenuebeenSelected.map(venue => { return venue.value })))
+            result = await postNewBannedPerson(banDetails)
+        }
 
         if (isPrismaResultError(result)) {
             return displayErrorToastForAxios(result)
         }
 
-        // toaster.create({
-        //     title: 'success',
-        //     description: `Alert uploaded for ${inputAlertPersonName}`,
-        //     type: 'success'
-        // })
-
-        socket.emit('createAlert', { account_name: stateUser?.account_name })
+        // need to change backend to decide what a non-admin account does, (maybe notify admin with a toast there is a pending ban/alert)
+        if (inputBannedPersonId === -1) {
+            socket.emit('createBanForNewPerson', { account_name: stateUser?.account_name })
+        } else {
+            socket.emit('createBanForExistingPerson', { account_name: stateUser?.account_name, bannedPerson_name: inputBannedPersonName })
+        }
 
         setUploadedImageFile(undefined)
         fileUploadValue.clearFiles()
-        setInputAlertPersonName("")
-        setInputAlertReason("")
+        setInputBannedPersonName("")
+        setInputBanReason("")
+        setInputBanEndDate("")
+        setRadioBanEndDate("")
         setInputBannedPersonId(-1)
+        const uncheckedBoxes = venueCheckboxes.map(checkbox => {
+            checkbox.checked = false
+            return checkbox
+        })
+        setVenueCheckboxes(uncheckedBoxes)
+    }
+
+    const banDateInputHandler = (inputValue: string) => {
+        if (inputValue !== "" && radioBanEndDate !== null) {
+            setRadioBanEndDate(null)
+        }
+
+        const prev = inputBanEndDate
+        const isDeleting = inputValue.length < prev.length
+        const digitsOnly = inputValue.replace(/\D/g, "").slice(0, 8)
+        let formatted = ""
+
+        if (digitsOnly.length <= 2) {
+            formatted = digitsOnly
+        } else if (digitsOnly.length <= 4) {
+            formatted = `${digitsOnly.slice(0, 2)}/${digitsOnly.slice(2)}`
+        } else {
+            formatted = `${digitsOnly.slice(0, 2)}/${digitsOnly.slice(2, 4)}/${digitsOnly.slice(4)}`
+        }
+
+        if (isDeleting && prev.endsWith("/") && !inputValue.endsWith("/")) {
+            formatted = formatted.slice(0, -1)
+        }
+
+        setInputBanEndDate(formatted)
+    }
+
+    const radioBanEndDateHandler = (event: ValueChangeDetails) => {
+        setInputBanEndDate("")
+        setRadioBanEndDate(String(event.value))
+    }
+
+    const radioBanEndDateValueHandler = (duration: string) => {
+        let [timeValue, timeDuration] = duration.split(' ')
+        const timeDurationShorthand = timeDuration.substring(0, 1).toLocaleLowerCase()
+
+        if (timeDurationShorthand === "y") {
+            return String(dayjs().add(Number(timeValue), 'year').format('DD/MM/YYYY'))
+        }
+
+        return String(dayjs().add(Number(timeValue), 'month').format('DD/MM/YYYY'))
     }
 
     const inputBannedPersonSearchHandler = (inputText: string) => {
@@ -133,12 +227,13 @@ const PageCreateAlert = () => {
         setStateAllBannedPeopleFiltered(filteredSearchResult)
     }
 
-    if (stateVenues.isLoading || !stateVenues.data) {
+    if (stateVenues.isLoading || !stateVenues.data || venueCheckboxes.length === 0) {
         return <Spinner />
     }
 
     return (
         <VStack w="full" alignItems="flex-start" gap={8}>
+
             {
                 stateAllBannedPeople === null
                     ? null
@@ -160,7 +255,7 @@ const PageCreateAlert = () => {
                                                 setInputBannedPersonId(Number(event.value))
 
                                                 if (Number(event.value) === -1) {
-                                                    setInputAlertPersonName("")
+                                                    setInputBannedPersonName("")
                                                     return
                                                 }
 
@@ -169,7 +264,7 @@ const PageCreateAlert = () => {
                                                         return bannedPerson
                                                     }
                                                 })
-                                                setInputAlertPersonName(result[0].bannedPerson_name)
+                                                setInputBannedPersonName(result[0].bannedPerson_name)
                                             }}
                                         >
 
@@ -213,7 +308,9 @@ const PageCreateAlert = () => {
                     </Accordion.Root>
             }
 
-            <FileUpload.RootProvider value={fileUploadValue} gap="1">
+            <Text>OR:</Text>
+
+            <FileUpload.RootProvider value={fileUploadValue} gap="1" opacity={inputBannedPersonId === -1 ? 1 : 0.5}>
                 <FileUpload.HiddenInput />
                 <FileUpload.Label>
                     Upload Image Of Person{" "}
@@ -236,7 +333,7 @@ const PageCreateAlert = () => {
                         </FileUpload.ClearTrigger>
                     }
                 >
-                    <Input asChild>
+                    <Input asChild disabled={inputBannedPersonId === -1 ? false : true}>
                         <FileUpload.Trigger>
                             <FileUpload.FileText lineClamp={1} fallback="Upload Image" />
                         </FileUpload.Trigger>
@@ -246,13 +343,13 @@ const PageCreateAlert = () => {
 
             <Field.Root required opacity={inputBannedPersonId === -1 ? 1 : 0.5}>
                 <Field.Label>
-                    Name Of Person For Alert <Field.RequiredIndicator />
+                    Name Of Person For Ban <Field.RequiredIndicator />
                 </Field.Label>
                 <Input
                     type="text"
                     placeholder="Enter Name"
-                    value={inputAlertPersonName}
-                    onChange={event => setInputAlertPersonName(event.target.value)}
+                    value={inputBannedPersonName}
+                    onChange={event => setInputBannedPersonName(event.target.value)}
                     disabled={inputBannedPersonId === -1 ? false : true}
                 />
             </Field.Root>
@@ -260,19 +357,101 @@ const PageCreateAlert = () => {
 
             <Field.Root required>
                 <Field.Label>
-                    Reason For Alert <Field.RequiredIndicator />
+                    Reason For Ban <Field.RequiredIndicator />
                 </Field.Label>
                 <Input
                     type="text"
                     placeholder="Ban Reason"
-                    value={inputAlertReason}
-                    onChange={event => setInputAlertReason(event.target.value)}
+                    value={inputBanReason}
+                    onChange={event => setInputBanReason(event.target.value)}
                 />
             </Field.Root>
 
-            <Button onClick={uploadAlertHandler}>Upload Alert</Button>
+            <VStack gap={4} w="full" alignItems="flex-start">
+                <Field.Root required>
+                    <Field.Label>
+                        Ban Until (DD/MM/YYYY) <Field.RequiredIndicator />
+                    </Field.Label>
+                    <Input
+                        type="text"
+                        placeholder="DD/MM/YYYY"
+                        value={inputBanEndDate}
+                        onChange={event => banDateInputHandler(event.target.value)}
+                    />
+                </Field.Root>
+
+                <Text>OR:</Text>
+
+                <RadioGroup.Root
+                    value={radioBanEndDate}
+                    onValueChange={event => {
+                        radioBanEndDateHandler(event)
+                    }}
+                >
+                    <VStack gap={4} alignItems="flex-start" textTransform="capitalize">
+                        {presetBanDurations.map(duration => {
+                            const radioValues = radioBanEndDateValueHandler(duration)
+                            return (
+                                <RadioGroup.Item key={duration} value={radioValues}>
+                                    <RadioGroup.ItemHiddenInput />
+                                    <RadioGroup.ItemIndicator />
+                                    <RadioGroup.ItemText>{duration}</RadioGroup.ItemText>
+                                </RadioGroup.Item>
+                            )
+                        })}
+                    </VStack>
+                </RadioGroup.Root>
+            </VStack>
+
+            <VStack
+                gap={4}
+                w="full"
+                alignItems="flex-start"
+                textTransform="capitalize"
+            >
+                <Heading>Venues To Be Banned From</Heading>
+
+                <Checkbox.Root
+                    checked={indeterminate ? "indeterminate" : allChecked}
+                    onCheckedChange={e => {
+                        setVenueCheckboxes(current =>
+                            current.map(v => ({ ...v, checked: !!e.checked })),
+                        )
+                    }}
+                >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control>
+                        <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    <Checkbox.Label>All Venues</Checkbox.Label>
+                </Checkbox.Root>
+
+                {venueCheckboxes.map((venue, index) => (
+                    <Checkbox.Root
+                        ms="6"
+                        key={venue.value}
+                        checked={venue.checked}
+                        onCheckedChange={e => {
+                            setVenueCheckboxes(current => {
+                                const newValues = [...current]
+                                newValues[index] = {
+                                    ...newValues[index],
+                                    checked: !!e.checked,
+                                }
+                                return newValues
+                            })
+                        }}
+                    >
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control />
+                        <Checkbox.Label>{venue.label}</Checkbox.Label>
+                    </Checkbox.Root>
+                ))}
+            </VStack>
+
+            <Button onClick={uploadBanHandler}>Upload Ban</Button>
         </VStack>
     )
 }
 
-export default PageCreateAlert
+export default PageCreateBan
