@@ -16,35 +16,57 @@ const PageDashboard = () => {
   const stateBannedPeople = useAppSelector(state => state.bannedPeopleDetailsSlice)
   const dispatch = useAppDispatch()
 
+  const [bannedPeopleWithActiveAlert, setBannedPeopleWithActiveAlert] = useState<BannedPersonWithActiveAlerts[]>([])
+
+  // useEffect(() => {
+  //   const getBannedPeopleHandler = async () => {
+  //     const result = await getAllNonPendingBan()
+
+  //     if (isPrismaResultError(result)) {
+  //       displayErrorToastForAxios(result)
+  //     }
+
+  //     dispatch(setBannedPeopleState(result))
+  //   }
+  //   const getActiveAlerts = async () => {
+  //     const result = await getAllWithActiveAlerts()
+
+  //     if (isPrismaResultError(result)) {
+  //       displayErrorToastForAxios(result)
+  //       return
+  //     }
+  //     setActiveAlerts(result)
+  //   }
+
+  //   if (isInitialLoad) {
+  //     dispatch(setNavbarHeadingState("Dashboard"))
+  //     getBannedPeopleHandler()
+  //     getActiveAlerts()
+  //     setIsInitialLoad(false)
+  //   }
+  // }, [isInitialLoad])
+
   useEffect(() => {
-    const getBannedPeopleHandler = async () => {
-      const result = await getAllNonPendingBan()
 
-      if (isPrismaResultError(result)) {
-        displayErrorToastForAxios(result)
-      }
-
-      dispatch(setBannedPeopleState(result))
-    }
-    const getActiveAlerts = async () => {
+    const getBannedPeopleWithActiveAlertHandler = async () => {
       const result = await getAllWithActiveAlerts()
-
-      if (isPrismaResultError(result)) {
-        displayErrorToastForAxios(result)
-        return
-      }
-      setActiveAlerts(result)
+          if (isPrismaResultError(result)) {
+            displayErrorToastForAxios(result)
+            return
+          }
+          setBannedPeopleWithActiveAlert(result)
     }
+
 
     if (isInitialLoad) {
-      dispatch(setNavbarHeadingState("Dashboard"))
-      getBannedPeopleHandler()
-      getActiveAlerts()
+      setNavbarHeadingState('Dashboard')
+      getBannedPeopleWithActiveAlertHandler()
       setIsInitialLoad(false)
     }
   }, [isInitialLoad])
 
-  if (isInitialLoad || stateBannedPeople.data === null || stateBannedPeople.isLoading) {
+
+  if (isInitialLoad || stateBannedPeople.isLoading) {
     return <Center><Spinner /></Center>
   }
 
@@ -52,11 +74,11 @@ const PageDashboard = () => {
   return (
     <ComponentContainer>
       <VStack w="full" gap={8} >
-        {/* <ChakraLink w="full" asChild>
+        <ChakraLink w="full" asChild>
           <RouterLink to="create-alert">
             <Button w="full">Create Alert</Button>
           </RouterLink>
-        </ChakraLink> */}
+        </ChakraLink>
 
         <ChakraLink w="full" asChild>
           <RouterLink to="create-ban">
@@ -67,17 +89,18 @@ const PageDashboard = () => {
         <Separator w="full" />
 
         {
-          activeAlerts.length === 0
+          bannedPeopleWithActiveAlert.length === 0
             ? null
             : <>
               <Heading>Active Alerts</Heading>
               <SimpleGrid columns={[2, 4]} gap={8} >
-                {activeAlerts.map((bannedPerson) => {
+                {bannedPeopleWithActiveAlert.map((bannedPerson) => {
+                  console.log(bannedPerson)
                   return <VStack key={bannedPerson.bannedPerson_id} align="flex-start" gap={2} >
-                    <Image h="20vh" aspectRatio={1} objectFit='cover' src={bannedPerson.bannedPerson_imagePath} />
+                    <Image h="20vh" aspectRatio={1} objectFit='cover' src={bannedPerson.AlertDetail[0].alertDetail_imagePath} />
                     <VStack alignItems='flex-start' gap={0} >
                       <Text>{capitalizeString(bannedPerson.bannedPerson_name)}</Text>
-                      <Text fontSize='small' color="gray.500" >{capitalizeString(bannedPerson.AlertDetail[0].alertDetails_alertReason)}</Text>
+                      <Text fontSize='small' color="gray.500" >{capitalizeString(bannedPerson.AlertDetail[0].alertDetail_alertReason)}</Text>
                     </VStack>
                   </VStack>
                 })}
