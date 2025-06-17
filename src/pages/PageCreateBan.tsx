@@ -30,15 +30,17 @@ import { ValueChangeDetails } from "@zag-js/radio-group"
 import { useEffect, useState } from "react"
 import { GoUpload } from "react-icons/go"
 import dayjs from '../utils/helper-functions/dayjs-setup'
+import { useLoaderData } from "react-router"
 
 const PageCreateBan = () => {
+    const allBannedPeople = useLoaderData<BannedPerson[]>()
     const dispatch = useAppDispatch()
     const socket = getSocket()
     const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true)
     const stateUser = useAppSelector(state => state.userAccountDetailsSlice.data)
     const stateNavbarHeading = useAppSelector(state => state.navbarHeadingSlice.heading)
     const stateVenues = useAppSelector(state => state.venuesSlice)
-    const stateAllBannedPeople = useAppSelector(state => state.bannedPeopleDetailsSlice.data)
+    // const stateAllBannedPeople = useAppSelector(state => state.bannedPeopleDetailsSlice.data)
     const [stateAllBannedPeopleFiltered, setStateAllBannedPeopleFiltered] = useState<BannedPerson[]>([])
 
     const [uploadedImageFile, setUploadedImageFile] = useState<File | undefined>(undefined)
@@ -81,10 +83,10 @@ const PageCreateBan = () => {
     }, [stateVenues.data])
 
     useEffect(() => {
-        if (stateAllBannedPeople !== null) {
-            setStateAllBannedPeopleFiltered(stateAllBannedPeople)
+        if (allBannedPeople !== null) {
+            setStateAllBannedPeopleFiltered(allBannedPeople)
         }
-    }, [stateAllBannedPeople])
+    }, [allBannedPeople])
 
 
 
@@ -125,10 +127,10 @@ const PageCreateBan = () => {
 
         if (inputBannedPersonId !== -1) {
             result = postNewBanDetail({
-                banDetails_bannedPersonId: inputBannedPersonId,
-                banDetails_reason: inputBanReason,
-                banDetails_banEndDate: inputBanEndDate !== "" ? dayjs(inputBanEndDate, 'DD-MM-YYYY').toISOString() : dayjs(radioBanEndDate, 'DD-MM-YYYY').toISOString(),
-                banDetails_venueBanIds: hasVenuebeenSelected.map(venue => { return venue.value })
+                banDetail_bannedPersonId: inputBannedPersonId,
+                banDetail_reason: inputBanReason,
+                banDetail_banEndDate: inputBanEndDate !== "" ? dayjs(inputBanEndDate, 'DD-MM-YYYY').toISOString() : dayjs(radioBanEndDate, 'DD-MM-YYYY').toISOString(),
+                banDetail_venueBanIds: hasVenuebeenSelected.map(venue => { return venue.value })
             })
         } else {
             const banDetails = new FormData()
@@ -210,16 +212,16 @@ const PageCreateBan = () => {
         inputText = inputText.toLocaleLowerCase()
         setInputBannedPersonSearch(inputText)
 
-        if (stateAllBannedPeople === null) {
+        if (allBannedPeople === null) {
             return
         }
 
         if (inputText === "") {
-            setStateAllBannedPeopleFiltered(stateAllBannedPeople)
+            setStateAllBannedPeopleFiltered(allBannedPeople)
             return
         }
 
-        const filteredSearchResult = stateAllBannedPeople.filter((bannedPerson) => {
+        const filteredSearchResult = allBannedPeople.filter((bannedPerson) => {
             if (bannedPerson.bannedPerson_name.toLocaleLowerCase().includes(inputText)) {
                 return bannedPerson
             }
@@ -235,7 +237,7 @@ const PageCreateBan = () => {
         <VStack w="full" alignItems="flex-start" gap={8}>
 
             {
-                stateAllBannedPeople === null
+                allBannedPeople === null
                     ? null
                     : <Accordion.Root collapsible variant='enclosed' >
                         <Accordion.Item key={1} value={"1"} >
@@ -259,7 +261,7 @@ const PageCreateBan = () => {
                                                     return
                                                 }
 
-                                                const result = stateAllBannedPeople.filter(bannedPerson => {
+                                                const result = allBannedPeople.filter(bannedPerson => {
                                                     if (bannedPerson.bannedPerson_id === Number(event.value)) {
                                                         return bannedPerson
                                                     }

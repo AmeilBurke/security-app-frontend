@@ -1,5 +1,3 @@
-import { postNewBanDetail } from "@/api-requests/ban-details/postNewBanDetail"
-import { postNewBannedPerson } from "@/api-requests/banned-people/postNewBannedPerson"
 import { useAppDispatch, useAppSelector } from "@/app/hooks"
 import { toaster } from "@/components/ui/toaster"
 import { fetchAllBannedPeople } from "@/features/bannedPeopleDetailsSlice"
@@ -26,20 +24,19 @@ import {
     AvatarGroup,
     HStack,
 } from "@chakra-ui/react"
-import { ValueChangeDetails } from "@zag-js/radio-group"
 import { useEffect, useState } from "react"
 import { GoUpload } from "react-icons/go"
-import dayjs from '../utils/helper-functions/dayjs-setup'
-import { postNewAlert } from "@/api-requests/alerts/postNewAlert"
+import { postNewAlert } from "@/api-requests/alert-details/postNewAlert"
+import { useLoaderData } from "react-router"
 
 const PageCreateAlert = () => {
+    const allBannedPeople = useLoaderData<BannedPerson[]>()
     const dispatch = useAppDispatch()
     const socket = getSocket()
     const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true)
     const stateUser = useAppSelector(state => state.userAccountDetailsSlice.data)
     const stateNavbarHeading = useAppSelector(state => state.navbarHeadingSlice.heading)
     const stateVenues = useAppSelector(state => state.venuesSlice)
-    const stateAllBannedPeople = useAppSelector(state => state.bannedPeopleDetailsSlice.data)
     const [stateAllBannedPeopleFiltered, setStateAllBannedPeopleFiltered] = useState<BannedPerson[]>([])
 
     const [uploadedImageFile, setUploadedImageFile] = useState<File | undefined>(undefined)
@@ -63,10 +60,10 @@ const PageCreateAlert = () => {
     }, [stateNavbarHeading, stateUser, isInitialLoad])
 
     useEffect(() => {
-        if (stateAllBannedPeople !== null) {
-            setStateAllBannedPeopleFiltered(stateAllBannedPeople)
+        if (allBannedPeople !== null) {
+            setStateAllBannedPeopleFiltered(allBannedPeople)
         }
-    }, [stateAllBannedPeople])
+    }, [allBannedPeople])
 
     const uploadAlertHandler = async () => {
 
@@ -97,12 +94,6 @@ const PageCreateAlert = () => {
             return displayErrorToastForAxios(result)
         }
 
-        // toaster.create({
-        //     title: 'success',
-        //     description: `Alert uploaded for ${inputAlertPersonName}`,
-        //     type: 'success'
-        // })
-
         socket.emit('createAlert', { account_name: stateUser?.account_name })
 
         setUploadedImageFile(undefined)
@@ -116,16 +107,16 @@ const PageCreateAlert = () => {
         inputText = inputText.toLocaleLowerCase()
         setInputBannedPersonSearch(inputText)
 
-        if (stateAllBannedPeople === null) {
+        if (allBannedPeople === null) {
             return
         }
 
         if (inputText === "") {
-            setStateAllBannedPeopleFiltered(stateAllBannedPeople)
+            setStateAllBannedPeopleFiltered(allBannedPeople)
             return
         }
 
-        const filteredSearchResult = stateAllBannedPeople.filter((bannedPerson) => {
+        const filteredSearchResult = allBannedPeople.filter((bannedPerson) => {
             if (bannedPerson.bannedPerson_name.toLocaleLowerCase().includes(inputText)) {
                 return bannedPerson
             }
@@ -140,7 +131,7 @@ const PageCreateAlert = () => {
     return (
         <VStack w="full" alignItems="flex-start" gap={8}>
             {
-                stateAllBannedPeople === null
+                allBannedPeople === null
                     ? null
                     : <Accordion.Root collapsible variant='enclosed' >
                         <Accordion.Item key={1} value={"1"} >
@@ -164,7 +155,7 @@ const PageCreateAlert = () => {
                                                     return
                                                 }
 
-                                                const result = stateAllBannedPeople.filter(bannedPerson => {
+                                                const result = allBannedPeople.filter(bannedPerson => {
                                                     if (bannedPerson.bannedPerson_id === Number(event.value)) {
                                                         return bannedPerson
                                                     }
