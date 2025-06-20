@@ -47,15 +47,19 @@ export type AlertDetail = {
 }
 
 export type BanDetail = {
-  alertDetail_id: number
-  alertDetail_bannedPersonId: number
-  alertDetail_name: string
-  alertDetail_imagePath: string
-  alertDetail_alertReason: string
-  alertDetail_startTime: string
-  alertDetail_alertUploadedBy: number
+  banDetail_id: number
+  banDetail_bannedPersonId: number
+  banDetail_reason: string
+  banDetail_banStartDate: string
+  banDetail_banEndDate: string
+  banDetail_venueBanId: number
+  banDetail_isBanPending: Boolean
+  banDetail_banUploadedBy: number
   Account: {
     account_name: string
+  }
+  Venue: {
+    venue_name: string
   }
 }
 
@@ -70,6 +74,11 @@ export type BannedPersonWithActiveAlerts = BannedPerson & {
   AlertDetail: AlertDetail[]
   BanDetail: BanDetail[]
 }
+
+export type BannedPersonWithBanDetails = BannedPerson & {
+  BanDetail: BanDetail[]
+}
+
 export type Venue = {
   venue_id: number
   venue_name: string
@@ -81,4 +90,12 @@ export type Venue = {
       venueManager_accountId: number
     },
   ]
+}
+
+export type GroupedBan = {
+  banDetail_banStartDate: string
+  banDetail_banEndDate: string
+  banDetail_reason: string
+  account_name: string
+  venues: string[]
 }

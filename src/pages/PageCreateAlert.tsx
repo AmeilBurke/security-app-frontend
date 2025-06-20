@@ -15,8 +15,6 @@ import {
     Field,
     Spinner,
     RadioGroup,
-    Heading,
-    Checkbox,
     Button,
     Accordion,
     Span,

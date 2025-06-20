@@ -6,6 +6,7 @@ import { Provider as ChakraProvider } from "@/components/ui/provider"
 import router from "./router"
 import "./main.css"
 import { RouterProvider } from "react-router"
+import { Theme } from "@chakra-ui/react"
 
 const container = document.getElementById("root")
 
@@ -16,7 +17,9 @@ if (container) {
     <React.StrictMode>
       <ReduxProvider store={store}>
         <ChakraProvider>
-          <RouterProvider router={router} />
+          <Theme appearance="light" >
+            <RouterProvider router={router} />
+          </Theme>
         </ChakraProvider>
       </ReduxProvider>
     </React.StrictMode>,
